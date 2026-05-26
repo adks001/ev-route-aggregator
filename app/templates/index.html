@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EV Mobility & Intelligent Route Aggregator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <!-- LEAFLET.JS MAP LIBRARY (NO API KEY REQUIRED) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  
+  <style>
+    :root {
+      --bg-dark: #070913;
+      --card-bg: rgba(17, 24, 39, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --electric-blue: #00f0ff;
+      --glow-green: #39ff14;
+      --warning-red: #ff3838;
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: radial-gradient(circle at 50% 0%, #151e3f 0%, var(--bg-dark) 70%);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+      overflow-x: hidden;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      max-width: 800px;
+    }
+
+    header h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(to right, #ffffff, var(--electric-blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1.1rem;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      background: rgba(0, 240, 255, 0.15);
+      border: 1px solid var(--electric-blue);
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--electric-blue);
+      margin-bottom: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .card h2 {
+      font-size: 1.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #fff;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    select, input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 0.8rem;
+      color: #fff;
+      font-family: inherit;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--electric-blue);
+    }
+
+    .btn-swap {
+      background: none;
+      border: none;
+      color: var(--electric-blue);
+      cursor: pointer;
+      align-self: flex-end;
+      margin-bottom: 0.75rem;
+      padding: 0.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 50%;
+    }
+    .btn-swap:hover {
+      background: rgba(0, 240, 255, 0.1);
+      color: #fff;
+      transform: rotate(180deg);
+    }
+
+    .btn {
+      background: linear-gradient(135deg, var(--electric-blue) 0%, #0099ff 100%);
+      color: #000;
+      font-weight: 800;
+      border: none;
+      border-radius: 10px;
+      padding: 1rem;
+      font-size: 1.05rem;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: none;
+    }
+
+    /* Leaflet Google Map style container */
+    #map {
+      height: 320px;
+      width: 100%;
+      border-radius: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      z-index: 10;
+    }
+
+    /* Terminal Console */
+    .console {
+      background: #02040a;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 15px;
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #38bdf8;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .console-header {
+      display: flex;
+      justify-content: space-between;
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    .console-log {
+      color: #a855f7;
+      margin-bottom: 0.25rem;
+    }
+
+    .console-resp {
+      color: #22c55e;
+      margin-bottom: 0.75rem;
+    }
+
+    .flex-row {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .flex-row > * {
+      flex: 1;
+    }
+
+    .status-panel {
+      padding: 1rem;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.95rem;
+    }
+
+    .status-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+    }
+
+    .status-row:last-child {
+      margin-bottom: 0;
+    }
+
+    .status-value {
+      font-weight: 600;
+      color: #fff;
+    }
+
+    /* Geofence Box Styling */
+    .geofence-alert {
+      padding: 1rem;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    .geofence-locked {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+    }
+
+    .geofence-unlocked {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      color: #86efac;
+    }
+
+    .pin-display {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: 5px;
+      color: var(--glow-green);
+      text-align: center;
+      margin: 0.5rem 0;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Contact Us styles */
+    .contact-fab {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      border-radius: 50%;
+      box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+      z-index: 99;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      cursor: pointer;
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+    }
+    .contact-fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 25px rgba(37, 211, 102, 0.6);
+    }
+    .contact-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 101;
+      backdrop-filter: blur(8px);
+    }
+    .contact-card {
+      background: #111422;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      max-width: 450px;
+      width: 90%;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      position: relative;
+    }
+
+    /* Modal Simulation */
+    .upi-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 100;
+      backdrop-filter: blur(8px);
+    }
+
+    .upi-card {
+      background: #111422;
+      border: 1px solid var(--electric-blue);
+      border-radius: 20px;
+      max-width: 400px;
+      width: 90%;
+      padding: 2rem;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .upi-header {
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+
+    .upi-logo {
+      color: #6366f1;
+      font-size: 1.5rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+    }
+
+    /* Timeline Styles */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-top: 1rem;
+      position: relative;
+      padding-left: 1.5rem;
+    }
+
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 6px;
+      top: 10px;
+      bottom: 10px;
+      width: 2px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .timeline-item {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .timeline-badge {
+      position: absolute;
+      left: -21px;
+      top: 4px;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #888;
+      border: 2px solid var(--bg-dark);
+    }
+
+    .timeline-badge.origin {
+      background: var(--electric-blue);
+      box-shadow: 0 0 8px var(--electric-blue);
+    }
+
+    .timeline-badge.destination {
+      background: var(--warning-red);
+      box-shadow: 0 0 8px var(--warning-red);
+    }
+
+    .timeline-badge.charge {
+      background: #ffaa00;
+      box-shadow: 0 0 8px #ffaa00;
+    }
+
+    .timeline-badge.refuel {
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    .timeline-title {
+      font-weight: 600;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    .timeline-meta {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Autocomplete Suggestions */
+    .autocomplete-suggestions {
+      background: #111827 !important;
+      border: 1px solid rgba(0, 240, 255, 0.4) !important;
+      border-radius: 10px;
+      margin-top: 5px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 1000;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+    
+    .suggestion-item {
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      color: #e5e7eb;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: background 0.2s, color 0.2s;
+      text-align: left;
+    }
+    
+    .suggestion-item:hover {
+      background: rgba(0, 240, 255, 0.1);
+      color: var(--electric-blue);
+    }
+    
+    .suggestion-item:last-child {
+      border-bottom: none;
+    }
+
+    /* Structured Dashboard List Styles */
+    .station-dashboard-container {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .station-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 15px;
+      padding: 1.2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .station-card:hover {
+      border-color: rgba(0, 240, 255, 0.2);
+      box-shadow: 0 0 10px rgba(0, 240, 255, 0.05);
+    }
+
+    .station-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 0.5rem;
+    }
+
+    .station-title {
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: #fff;
+      text-align: left;
+    }
+
+    .station-operator {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+      text-align: left;
+    }
+
+    .station-hours {
+      font-size: 0.75rem;
+      color: var(--glow-green);
+      font-weight: 600;
+      background: rgba(57, 255, 20, 0.08);
+      border: 1px solid rgba(57, 255, 20, 0.15);
+      padding: 0.2rem 0.5rem;
+      border-radius: 5px;
+      white-space: nowrap;
+    }
+
+    .connector-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      margin-top: 0.25rem;
+    }
+
+    .connector-item {
+      background: rgba(255, 255, 255, 0.01);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+    }
+
+    .connector-left {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+      text-align: left;
+    }
+
+    .connector-type {
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .connector-power {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: var(--electric-blue);
+    }
+
+    .connector-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .connector-price {
+      font-weight: 600;
+      color: var(--glow-green);
+    }
+
+    .station-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      border-top: 1px solid rgba(255,255,255,0.05);
+      padding-top: 0.5rem;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="badge">Intelligent Routing & Energy Aggregator</div>
+    <h1>Multi-Vendor Route Aggregator</h1>
+    <p>Simulate EV charging curves or dynamic ICE fuel refills on interactive Leaflet Google Maps style interfaces</p>
+  </header>
+
+  <div class="main-grid">
+    
+    <!-- LEFT PANEL: Inputs & Planner -->
+    <div class="card">
+      <h2>Step 1: Intelligent Route Planner</h2>
+      
+      <!-- START / END INPUTS WITH AUTOCOMPLETE -->
+      <div class="flex-row" style="align-items: flex-end;">
+        <div class="form-group" style="position: relative; flex: 1;">
+          <label for="startLocationInput">Start Location</label>
+          <input type="text" id="startLocationInput" placeholder="Search origin (e.g. Bengaluru)..." value="Bengaluru, Karnataka, India" autocomplete="off">
+          <div class="autocomplete-suggestions" id="startSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0;"></div>
+        </div>
+        
+        <button type="button" class="btn-swap" id="btnSwapLocations" title="Swap Starting Location & Destination">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M280-280v-400H160l160-160 160 160H360v400h-80Zm360 400L480-440h120v-400h80v400h120L640-120Z"/></svg>
+        </button>
+
+        <div class="form-group" style="position: relative; flex: 1;">
+          <label for="endLocationInput">Destination</label>
+          <input type="text" id="endLocationInput" placeholder="Search destination (e.g. Hyderabad)..." value="Hyderabad, Telangana, India" autocomplete="off">
+          <div class="autocomplete-suggestions" id="endSuggestions" style="display: none; position: absolute; top: 100%; left: 0; right: 0;"></div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="vehicleModel">Select Vehicle Model</label>
+        <select id="vehicleModel">
+          <!-- GROUPED EV PASSENGER FLEET -->
+          <optgroup label="Mercedes-Benz">
+            <option value="mercedes_eqs_suv">Mercedes-Benz EQS SUV (~108-118 kWh, Up to 857 km)</option>
+          </optgroup>
+          <optgroup label="BMW">
+            <option value="bmw_i7">BMW i7 (101.7 kWh, Up to 625 km)</option>
+            <option value="bmw_ix">BMW iX (76.6 kWh, 575 km)</option>
+          </optgroup>
+          <optgroup label="Porsche">
+            <option value="porsche_taycan">Porsche Taycan (Up to 105 kWh, Up to 705 km)</option>
+            <option value="porsche_macan_ev">Porsche Macan EV (95 kWh, 624 km)</option>
+          </optgroup>
+          <optgroup label="Mahindra (Electric)">
+            <option value="mahindra_be_6">Mahindra BE 6 (79 kWh, 683 km)</option>
+            <option value="mahindra_xev_9e">Mahindra XEV 9e (~80 kWh, 656 km)</option>
+            <option value="mahindra_xuv400">Mahindra XUV400 EV (39.4 kWh, 456 km)</option>
+          </optgroup>
+          <optgroup label="Kia">
+            <option value="kia_ev6">Kia EV6 (77.4 kWh, 663 km)</option>
+          </optgroup>
+          <optgroup label="BYD">
+            <option value="byd_seal">BYD Seal (82.5 kWh, 650 km)</option>
+          </optgroup>
+          <optgroup label="Tata Motors">
+            <option value="tata_harrier_ev">Tata Harrier EV (~60-80 kWh, 627 km)</option>
+            <option value="tata_nexon_ev_lr" selected>Tata Nexon EV Long Range (40.5 kWh, 465 km)</option>
+          </optgroup>
+          <optgroup label="Lotus">
+            <option value="lotus_eletre">Lotus Eletre (112 kWh, 600 km)</option>
+          </optgroup>
+          <optgroup label="Volvo">
+            <option value="volvo_ex40">Volvo EX40 (XC40) (79 kWh, 592 km)</option>
+          </optgroup>
+          <optgroup label="Audi">
+            <option value="audi_q8_etron">Audi Q8 e-tron (114 kWh, 582 km)</option>
+          </optgroup>
+          <optgroup label="Hyundai">
+            <option value="hyundai_ioniq_5">Hyundai IONIQ 5 (72.6 kWh, ~550 km)</option>
+            <option value="hyundai_kona">Hyundai Kona Electric (39.2-65.4 kWh, 452-490 km)</option>
+          </optgroup>
+          <optgroup label="Maruti Suzuki">
+            <option value="maruti_evitara">Maruti Suzuki e Vitara (61 kWh, 543 km)</option>
+          </optgroup>
+          <optgroup label="MG">
+            <option value="mg_zs_ev">MG ZS EV (50.3 kWh, 461 km)</option>
+            <option value="mg_windsor_ev">MG Windsor EV (38-50 kWh, 332-460 km)</option>
+          </optgroup>
+          
+          <!-- GROUPED NON-EV COMBUSTION FLEET -->
+          <optgroup label="Non-EV Combustion Cars (IC Engine)">
+            <option value="ice_petrol">Petrol Car (ICE) (50L Tank)</option>
+            <option value="ice_diesel">Diesel Car (ICE) (55L Tank)</option>
+            <option value="ice_cng">CNG Car (ICE) (10kg Tank)</option>
+          </optgroup>
+        </select>
+      </div>
+ 
+      <div class="flex-row">
+        <div class="form-group">
+          <label id="lblStartSoC" for="startSoC">Starting SoC %</label>
+          <input type="number" id="startSoC" value="85" min="10" max="100">
+        </div>
+        
+        <!-- AC CONTROL GROUP (EVs ONLY) -->
+        <div class="form-group" id="acControlGroup">
+          <label for="climateMode">AC Cabin Profile</label>
+          <select id="climateMode">
+            <option value="Normal">Normal AC (Heavy Decay)</option>
+            <option value="Eco">Eco AC (Mild Decay)</option>
+            <option value="Off">AC Off</option>
+          </select>
+        </div>
+      </div>
+ 
+      <!-- DYNAMIC COMBUSTION (ICE) INPUT FIELDS -->
+      <div id="iceInputsGroup" class="flex-row" style="display: none; margin-bottom: 0.5rem;">
+        <div class="form-group">
+          <label id="lblMileage" for="iceMileage">Mileage (kmpl)</label>
+          <input type="number" id="iceMileage" value="15" min="5" max="40" step="0.5">
+        </div>
+        <div class="form-group">
+          <label id="lblFuelRate" for="iceFuelRate">Fuel Rate (₹/L)</label>
+          <input type="number" id="iceFuelRate" value="104.5" min="50" max="200" step="0.1">
+        </div>
+      </div>
+
+      <!-- REAL-TIME TELEMETRY INDICATOR -->
+      <div class="status-panel" id="telemetryBanner" style="background: rgba(0, 240, 255, 0.05); border: 1px solid rgba(0, 240, 255, 0.15); margin-bottom: 0.5rem;">
+        <div style="font-weight: 600; font-size: 0.9rem; color: var(--electric-blue); margin-bottom: 0.25rem; display: flex; align-items: center; gap: 0.25rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" height="18" viewBox="0 -960 960 960" width="18" fill="var(--electric-blue)"><path d="M480-120q-75 0-140.5-28.5t-114-77q-48.5-48.5-77-114T120-480q0-75 28.5-140.5t77-114q48.5-48.5 114-77T480-840q75 0 140.5 28.5t114 77q48.5 48.5 77 114T840-480q0 75-28.5 140.5t-77 114q-48.5 48.5-114 77T480-120Zm0-80q116 0 198-82t82-198q0-116-82-198t-198-82q-116 0-198 82t-82 198q0 116 82 198t198 82Z"/></svg>
+          Real-time Fuel & Range Predictor
+        </div>
+        <div class="status-row">
+          <span>Single Tank/Charge Range:</span>
+          <span class="status-value" id="hudRange">-</span>
+        </div>
+        <div class="status-row">
+          <span>Est. Remaining Range (Starting Level):</span>
+          <span class="status-value" id="hudAvailableRange">-</span>
+        </div>
+        <div class="status-row" id="hudFuelPriceRow" style="display: none;">
+          <span id="lblHudFuelPrice">Active Fuel/Energy Price:</span>
+          <span class="status-value" id="hudFuelPrice">-</span>
+        </div>
+        <div class="status-row" id="hudNextStopRow" style="display: none;">
+          <span id="lblHudNextStop">Distance to Next Stop:</span>
+          <span class="status-value" id="hudNextStop">-</span>
+        </div>
+        <div class="status-row" id="hudWarningRow" style="display: none;">
+          <span style="color: var(--warning-red); font-weight: 600; font-size: 0.85rem;" id="hudWarningText">⚠️ Fuel stops will be required.</span>
+        </div>
+      </div>
+
+      <div class="flex-row" style="margin-top: 1rem; margin-bottom: 1rem;">
+        <button class="btn" id="btnPlanRoute" style="flex: 2;">Calculate Optimized Highway Plan</button>
+        <button class="btn" id="btnShareRoute" style="flex: 1; display: none; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.15); color: #fff; gap: 0.5rem;" title="Share this route plan">
+          <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M720-80q-50 0-85-35t-35-85q0-7 1-14.5t3-13.5L322-392q-17 15-38 23.5t-44 8.5q-50 0-85-35t-35-85q0-50 35-85t85-35q23 0 44 8.5t38 23.5l282-164q-2-6-3-13.5t-1-14.5q0-50 35-85t85-35q50 0 85 35t35 85q0 50-35 85t-85 35q-23 0-44-8.5t-38-23.5L322-568q2 6 3 13.5t1 14.5q0 7-1 14.5t-3 13.5l282 164q17-15 38-23.5t44-8.5q50 0 85 35t35 85q0 50-35 85t-85 35Zm0-660q17 0 28.5-11.5T760-680q0-17-11.5-28.5T720-720q-17 0-28.5 11.5T680-680q0 17 11.5 28.5T720-640ZM240-440q17 0 28.5-11.5T280-480q0-17-11.5-28.5T240-520q-17 0-28.5 11.5T200-480q0 17 11.5 28.5T240-440Zm480 280q17 0 28.5-11.5T760-200q0-17-11.5-28.5T720-240q-17 0-28.5 11.5T680-200q0 17 11.5 28.5T720-160Z"/></svg>
+          Share
+        </button>
+      </div>
+
+      <div class="status-panel">
+        <div class="status-row">
+          <span id="lblStopsHeading">Target Stops Injected:</span>
+          <span class="status-value" id="outStops">-</span>
+        </div>
+        <div class="status-row">
+          <span id="lblTimeHeading">Est. Charging Time:</span>
+          <span class="status-value" id="outTime">-</span>
+        </div>
+        <div class="status-row">
+          <span id="lblCostHeading">Total Journey Cost:</span>
+          <span class="status-value" id="outCost">-</span>
+        </div>
+      </div>
+
+      <!-- GOOGLE MAPS STYLE LEAFLET CONTAINER -->
+      <div id="map"></div>
+
+      <!-- TIMELINE LIST CONTAINER -->
+      <div class="status-panel" style="margin-top: 1rem;">
+        <h3 style="font-size: 1rem; color: #fff; margin-bottom: 0.5rem;">Step-by-Step Route & Telemetry Timeline</h3>
+        <div class="timeline" id="timelineContainer">
+          <div style="color: var(--text-muted); font-size: 0.9rem;">Click 'Calculate Optimized Highway Plan' to generate timeline details...</div>
+        </div>
+      </div>
+
+      <!-- STATION DASHBOARD LIST CONTAINER -->
+      <div class="status-panel" style="margin-top: 1rem;">
+        <h3 style="font-size: 1rem; color: #fff; margin-bottom: 0.5rem;" id="lblStationsHeading">Available Chargers & Rates Along Route</h3>
+        <div class="station-dashboard-container" id="stationsDashboardContainer">
+          <div style="color: var(--text-muted); font-size: 0.9rem;">Click 'Calculate Optimized Highway Plan' to view station connectors, rates, and locks...</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT PANEL: Booking & Proximity Simulator -->
+    <div class="card" id="bookingCard">
+      <h2 id="bookingCardHeader">Step 2: Proximity Geofenced Booking</h2>
+
+      <div id="bookingFields">
+        <div class="form-group">
+          <label>Your Live Coordinates (Simulated or Real)</label>
+          <div class="flex-row">
+            <input type="text" id="userLocationDisplay" value="12.9716, 77.5946" readonly>
+            <button class="btn btn-secondary" id="btnGetGPS" style="padding: 0 1rem; font-size: 0.9rem;">Fetch Real GPS</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Simulated Distance Control</label>
+          <select id="teleportSelector">
+            <option value="blr">Still in Bengaluru (~210 km from Zeon Charger)</option>
+            <option value="chick">Near Chickballapur (~160 km from Zeon Charger)</option>
+            <option value="close">Near Anantapur (~4.3 km away / 3 mins ETA)</option>
+          </select>
+        </div>
+
+        <div class="geofence-alert geofence-locked" id="geofenceBox">
+          <strong id="geofenceTitle">Geofence Locked: Too Far Away</strong>
+          <span id="geofenceDetail">Reservations are locked. You must be within a 15-minute travel radius (~20 km) of the charger.</span>
+        </div>
+
+        <button class="btn" id="btnBookCharger" style="background: #374151; color: #9ca3af; cursor: not-allowed;" disabled>
+          Book Charger Lock
+        </button>
+
+        <div class="status-panel" id="bookingConfirmedPanel" style="display: none;">
+          <div style="text-align: center; font-weight: 800; color: var(--glow-green); margin-bottom: 0.5rem;">
+            RESERVATION CONFIRMED (15m Lock Active)
+          </div>
+          <div class="status-row">
+            <span>Charge Station:</span>
+            <span class="status-value">Zeon Anantapur Bay 2</span>
+          </div>
+          <div class="status-row">
+            <span>Pre-Auth Blocked:</span>
+            <span class="status-value">₹500 (UPI AutoPay)</span>
+          </div>
+          <div class="status-row">
+            <span>Charger Unlock Pin:</span>
+            <div class="pin-display" id="unlockPin">----</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- ICE Non-EV Booking Disabled Panel -->
+      <div id="bookingIcePanel" style="display: none; padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.95rem; border: 1px dashed rgba(255,255,255,0.1); border-radius:15px; background: rgba(0,0,0,0.2);">
+        <svg xmlns="http://www.w3.org/2000/svg" height="48" viewBox="0 -960 960 960" width="48" fill="#10b981" style="margin-bottom:1rem;"><path d="M120-120v-80h80v-440q0-58 35-104t95-65v-71q0-17 11.5-28.5T370-920q17 0 28.5 11.5T410-880v71q60 19 95 65t35 104v200h40q25 0 42.5 17.5T640-380v380h-80v-80h-80v80H120Zm160-240h160v-240H280v240Zm440 240v-218q0-20 7-38.5t20-33.5l113-130q9-10 12.5-22t3.5-25q0-27-19-45.5T811-531q-14 0-26 4t-22 13L680-440h-40v80h16v18q-23 20-35.5 48.5T608-232v232h112Z"/></svg>
+        <p><strong>Refueling Active</strong></p>
+        <p style="margin-top:0.5rem; font-size: 0.85rem;">Combustion engines do not require booking mandates. Simply drive into any fuel station along the route.</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- CONSOLE LOG AT BOTTOM -->
+  <div style="max-width: 1200px; width: 100%; margin-top: 2rem;">
+    <div class="console-header">
+      <span>API Telemetry Stream & Gateway Logs (Real-time JSON payload capture)</span>
+      <span style="color: var(--electric-blue);">PORT: 3000</span>
+    </div>
+    <div class="console" id="apiConsole">
+      [System Initiated] Ready for simulation payload stream...
+    </div>
+  </div>
+
+  <!-- MOCK UPI POPUP -->
+  <div class="upi-modal" id="upiModal">
+    <div class="upi-card">
+      <div class="upi-logo">BHIM UPI</div>
+      <div class="upi-header">Pre-Authorize Charging Mandate</div>
+      <div style="font-size: 0.95rem; color: var(--text-muted);">
+        Authorize EV Aggregator to block up to <strong style="color: #fff;">₹500</strong> for your charging lock. The actual amount consumed will be settled instantly.
+      </div>
+      <div class="form-group">
+        <label>Enter 6-Digit UPI PIN</label>
+        <input type="password" id="upiPinInput" placeholder="••••••" maxlength="6" style="text-align: center; letter-spacing: 5px; font-size: 1.5rem;">
+      </div>
+      <button class="btn" id="btnSubmitUpi">Confirm Mandate Block</button>
+      <button class="btn btn-secondary" id="btnCancelUpi">Cancel</button>
+    </div>
+  </div>
+
+  <!-- FLOATING CONTACT ACTION BUTTON -->
+  <div class="contact-fab" id="contactFab" title="Feedback & Developer Support">
+    <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 -960 960 960" width="28" fill="currentColor"><path d="M240-400h320v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T880-240H240L80-80Zm80-193 111-111h529v-416H160v640Zm0 0v-640 640Z"/></svg>
+  </div>
+
+  <!-- CONTACT DEVELOPER MODAL -->
+  <div class="contact-modal" id="contactModal">
+    <div class="contact-card">
+      <button type="button" id="btnCancelContact" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      <h3 style="margin-top: 0; font-size: 1.3rem; color: #fff; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; justify-content: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" height="24" viewBox="0 -960 960 960" width="24" fill="var(--electric-blue)"><path d="M480-120q-33 0-56.5-23.5T400-200q0-33 23.5-56.5T480-280q33 0 56.5 23.5T560-200q0 33-23.5 56.5T480-120Zm-80-240v-480h160v480H400Z"/></svg>
+        Feedback & Support
+      </h3>
+      <p style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 0.5rem; text-align: center;">
+        Have questions or feedback? Contact the developer:
+      </p>
+      <div style="font-weight: 800; color: #fff; font-size: 1.05rem; margin-bottom: 1rem; text-align: center;">
+        Thakur Ankur Kumar Pratap Singh
+      </div>
+      
+      <div class="form-group" style="text-align: left;">
+        <label for="contactMessage">Your Message</label>
+        <textarea id="contactMessage" rows="4" placeholder="Write what you would like to mention..." style="width: 100%; padding: 0.75rem; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: inherit; font-size: 0.9rem; resize: none; margin-top: 0.25rem; box-sizing: border-box;"></textarea>
+      </div>
+      
+      <button class="btn" id="btnSubmitContact" style="width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); color: #fff; font-weight: 800;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 0.5rem; vertical-align: middle;"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.502-5.724-1.455L0 24zm6.59-4.846c1.6.95 3.1 1.46 4.9 1.46 5.4 0 9.8-4.4 9.8-9.8s-4.4-9.8-9.8-9.8-9.8 4.4-9.8 9.8c0 2 .5 3.9 1.5 5.6l-1 3.6 3.7-.99zM15.9 13q-.3-.1-.9-.4q-.2-.1-.4-.2q-.2 0-.4.2t-.5.7q-.2.2-.3.3t-.4 0c-.5-.2-.9-.4-1.2-.6c-.3-.3-.6-.6-.8-.8c-.1-.2-.1-.3 0-.4s.2-.2.3-.3q.1-.1.2-.2t0-.3v-.4q-.1-.3-.4-1.1c-.2-.6-.4-.6-.5-.6c-.2 0-.4 0-.6.1s-.4.2-.6.4c-.2.2-.7.7-.7 1.7s.7 2 1 2.4c.1.2 2.5 4 6.2 5.5c.9.4 1.6.6 2.1.8c.9.3 1.7.3 2.4.2c.7-.1 2.2-.9 2.5-1.8c.3-.9.3-1.7.2-1.8s-.4-.2-.7-.3z"/></svg>
+        Send via WhatsApp
+      </button>
+      
+      <div style="text-align: center; margin-top: 0.5rem; font-size: 0.85rem;">
+        <span style="color: var(--text-muted);">Or call directly at:</span>
+        <a href="tel:+917506009321" style="color: var(--electric-blue); font-weight: 600; text-decoration: none; margin-left: 0.25rem;">+91 75060 09321</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+
+    let currentLat = 12.9716;
+    let currentLon = 77.5946;
+
+    // Client-side Database of Vehicle Specifications
+    const VEHICLE_SPECS = {
+      // EVs
+      "mercedes_eqs_suv": { name: "Mercedes-Benz EQS SUV", battery: 118.0, range: 857.0, isIce: false },
+      "bmw_i7": { name: "BMW i7", battery: 101.7, range: 625.0, isIce: false },
+      "bmw_ix": { name: "BMW iX", battery: 76.6, range: 575.0, isIce: false },
+      "porsche_taycan": { name: "Porsche Taycan", battery: 105.0, range: 705.0, isIce: false },
+      "porsche_macan_ev": { name: "Porsche Macan EV", battery: 95.0, range: 624.0, isIce: false },
+      "mahindra_be_6": { name: "Mahindra BE 6", battery: 79.0, range: 683.0, isIce: false },
+      "mahindra_xev_9e": { name: "Mahindra XEV 9e", battery: 80.0, range: 656.0, isIce: false },
+      "mahindra_xuv400": { name: "Mahindra XUV400 EV", battery: 39.4, range: 456.0, isIce: false },
+      "kia_ev6": { name: "Kia EV6", battery: 77.4, range: 663.0, isIce: false },
+      "byd_seal": { name: "BYD Seal", battery: 82.5, range: 650.0, isIce: false },
+      "tata_harrier_ev": { name: "Tata Harrier EV", battery: 80.0, range: 627.0, isIce: false },
+      "tata_nexon_ev_lr": { name: "Tata Nexon EV Long Range", battery: 40.5, range: 465.0, isIce: false },
+      "lotus_eletre": { name: "Lotus Eletre", battery: 112.0, range: 600.0, isIce: false },
+      "volvo_ex40": { name: "Volvo EX40 (XC40)", battery: 79.0, range: 592.0, isIce: false },
+      "audi_q8_etron": { name: "Audi Q8 e-tron", battery: 114.0, range: 582.0, isIce: false },
+      "hyundai_ioniq_5": { name: "Hyundai IONIQ 5", battery: 72.6, range: 550.0, isIce: false },
+      "hyundai_kona": { name: "Hyundai Kona Electric", battery: 65.4, range: 490.0, isIce: false },
+      "maruti_evitara": { name: "Maruti Suzuki e Vitara", battery: 61.0, range: 543.0, isIce: false },
+      "mg_zs_ev": { name: "MG ZS EV", battery: 50.3, range: 461.0, isIce: false },
+      "mg_windsor_ev": { name: "MG Windsor EV", battery: 50.0, range: 460.0, isIce: false },
+      
+      // ICE (Combustion Engines)
+      "ice_petrol": { name: "Petrol Car", battery: 50.0, range: 15.0, isIce: true, rate: 104.5 },
+      "ice_diesel": { name: "Diesel Car", battery: 55.0, range: 18.0, isIce: true, rate: 90.8 },
+      "ice_cng": { name: "CNG Car", battery: 10.0, range: 25.0, isIce: true, rate: 85.0 }
+    };
+
+    // Selected Coordinate Data
+    let startLocationData = {
+      name: "Bengaluru, Karnataka, India",
+      latitude: 12.9716,
+      longitude: 77.5946
+    };
+    
+    let endLocationData = {
+      name: "Hyderabad, Telangana, India",
+      latitude: 17.3850,
+      longitude: 78.4867
+    };
+
+    let pendingPrebookConnectorId = null;
+    let pendingPrebookStationName = "";
+
+    // Elements
+    const apiConsole = document.getElementById('apiConsole');
+    const teleportSelector = document.getElementById('teleportSelector');
+    const userLocationDisplay = document.getElementById('userLocationDisplay');
+    const geofenceBox = document.getElementById('geofenceBox');
+    const geofenceTitle = document.getElementById('geofenceTitle');
+    const geofenceDetail = document.getElementById('geofenceDetail');
+    const btnBookCharger = document.getElementById('btnBookCharger');
+    const vehicleModel = document.getElementById('vehicleModel');
+    const startSoC = document.getElementById('startSoC');
+    const lblStartSoC = document.getElementById('lblStartSoC');
+    const acControlGroup = document.getElementById('acControlGroup');
+    const iceInputsGroup = document.getElementById('iceInputsGroup');
+    const iceMileage = document.getElementById('iceMileage');
+    const iceFuelRate = document.getElementById('iceFuelRate');
+    const lblMileage = document.getElementById('lblMileage');
+    const lblFuelRate = document.getElementById('lblFuelRate');
+
+    const bookingFields = document.getElementById('bookingFields');
+    const bookingIcePanel = document.getElementById('bookingIcePanel');
+    const bookingCardHeader = document.getElementById('bookingCardHeader');
+    
+    const bookingConfirmedPanel = document.getElementById('bookingConfirmedPanel');
+    const unlockPin = document.getElementById('unlockPin');
+    const upiModal = document.getElementById('upiModal');
+    const upiPinInput = document.getElementById('upiPinInput');
+    const timelineContainer = document.getElementById('timelineContainer');
+    const stationsDashboardContainer = document.getElementById('stationsDashboardContainer');
+
+    function logConsole(message, type = 'log') {
+      const div = document.createElement('div');
+      div.className = type === 'log' ? 'console-log' : 'console-resp';
+      div.innerText = message;
+      apiConsole.appendChild(div);
+      apiConsole.scrollTop = apiConsole.scrollHeight;
+    }
+
+    // Leaflet Map Initialization
+    const map = L.map('map').setView([15.1, 78.0], 6);
+    
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      subdomains: 'abcd',
+      maxZoom: 20
+    }).addTo(map);
+
+    let routeLineGroup = L.featureGroup().addTo(map);
+    let markerGroup = L.featureGroup().addTo(map);
+
+    // Geodesic distance formula in JavaScript
+    function getHaversineDistanceJS(lat1, lon1, lat2, lon2) {
+      const R = 6371; // km
+      const dLat = (lat2 - lat1) * Math.PI / 180;
+      const dLon = (lon2 - lon1) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      return R * c;
+    }
+
+    // Client-side loader for live scraped fuel rates
+    async function loadLiveFuelPrices() {
+      try {
+        const res = await fetch(API_BASE + '/api/v1/live-fuel-prices');
+        if (res.ok) {
+          const prices = await res.json();
+          logConsole("Live Fuel Prices loaded successfully: Petrol=₹" + prices.petrol + "/L, Diesel=₹" + prices.diesel + "/L, CNG=₹" + prices.cng + "/kg", "log");
+          
+          VEHICLE_SPECS["ice_petrol"].rate = prices.petrol;
+          VEHICLE_SPECS["ice_diesel"].rate = prices.diesel;
+          VEHICLE_SPECS["ice_cng"].rate = prices.cng;
+          
+          handleVehicleChange();
+        }
+      } catch (err) {
+        logConsole("Failed to fetch live fuel prices. Using offline defaults.", "log");
+      }
+    }
+
+    // Dynamic HUD Telemetry Calculator
+    function updateTelemetryHUD() {
+      const val = vehicleModel.value;
+      const spec = VEHICLE_SPECS[val];
+      if (!spec) return;
+
+      const journeyDistance = getHaversineDistanceJS(
+        startLocationData.latitude, startLocationData.longitude,
+        endLocationData.latitude, endLocationData.longitude
+      );
+
+      let totalRange = 0;
+      let availableRange = 0;
+      let socVal = parseFloat(startSoC.value) || 0;
+
+      if (spec.isIce) {
+        const mileage = parseFloat(iceMileage.value) || spec.range;
+        totalRange = spec.battery * mileage;
+        availableRange = totalRange * (socVal / 100);
+
+        document.getElementById('hudRange').innerText = `${totalRange.toFixed(0)} km (Full ${spec.battery}${val === 'ice_cng' ? 'kg' : 'L'} Tank)`;
+        document.getElementById('hudAvailableRange').innerText = `${availableRange.toFixed(0)} km (At ${socVal}% fuel level)`;
+      } else {
+        const ac = document.getElementById('climateMode').value;
+        let acFactor = 1.0;
+        if (ac === 'Normal') acFactor = 0.88;
+        else if (ac === 'Eco') acFactor = 0.94;
+
+        totalRange = spec.range * acFactor;
+        availableRange = totalRange * (socVal / 100);
+
+        document.getElementById('hudRange').innerText = `${totalRange.toFixed(0)} km (Full ${spec.battery} kWh charge, AC ${ac})`;
+        document.getElementById('hudAvailableRange').innerText = `${availableRange.toFixed(0)} km (At ${socVal}% charge level)`;
+      }
+
+      const fuelPriceRow = document.getElementById('hudFuelPriceRow');
+      const fuelPriceEl = document.getElementById('hudFuelPrice');
+      if (spec.isIce) {
+        const fuelRate = parseFloat(iceFuelRate.value) || spec.rate;
+        const fuelUnit = val === 'ice_cng' ? 'kg' : 'L';
+        const fuelType = val === 'ice_petrol' ? 'Petrol' : (val === 'ice_diesel' ? 'Diesel' : 'CNG');
+        fuelPriceEl.innerText = `₹${fuelRate.toFixed(2)} / ${fuelUnit} (${fuelType})`;
+        fuelPriceRow.style.display = 'flex';
+      } else {
+        fuelPriceEl.innerText = `₹18.00 / kWh (Avg EV DC Fast)`;
+        fuelPriceRow.style.display = 'flex';
+      }
+
+      const warningRow = document.getElementById('hudWarningRow');
+      const warningText = document.getElementById('hudWarningText');
+
+      if (availableRange < journeyDistance) {
+        warningRow.style.display = "flex";
+        if (spec.isIce) {
+          warningText.innerText = `⚠️ Remaining fuel range is insufficient for this ${journeyDistance.toFixed(0)} km trip. Fuel stop(s) will be injected.`;
+        } else {
+          warningText.innerText = `⚠️ Remaining charge range is insufficient for this ${journeyDistance.toFixed(0)} km trip. Charging stop(s) will be injected.`;
+        }
+      } else {
+        const arrivalSoc = socVal - (journeyDistance / totalRange) * 100;
+        if (arrivalSoc < 20.0) {
+          warningRow.style.display = "flex";
+          if (spec.isIce) {
+            warningText.innerText = `⚠️ Destination arrival fuel will drop to ${arrivalSoc.toFixed(1)}% (below 20% safe margin). A top-up stop will be injected.`;
+          } else {
+            warningText.innerText = `⚠️ Destination arrival charge will drop to ${arrivalSoc.toFixed(1)}% (below 20% safe margin). A charge stop will be injected.`;
+          }
+        } else {
+          warningRow.style.display = "none";
+        }
+      }
+    }
+
+    // Dynamic UI adjustments based on vehicle model selection
+    function handleVehicleChange() {
+      const val = vehicleModel.value;
+      const spec = VEHICLE_SPECS[val];
+      const isICE = spec ? spec.isIce : val.startsWith('ice_');
+      
+      if (isICE) {
+        lblStartSoC.innerText = "Starting Fuel %";
+        acControlGroup.style.display = "none";
+        iceInputsGroup.style.display = "flex";
+        bookingFields.style.display = "none";
+        bookingIcePanel.style.display = "block";
+        bookingCardHeader.innerText = "Step 2: Fuel Refueling Info";
+        
+        document.getElementById('lblStopsHeading').innerText = "Fuel Stops Injected:";
+        document.getElementById('lblTimeHeading').innerText = "Est. Refueling Time:";
+        document.getElementById('lblCostHeading').innerText = "Total Fuel Cost:";
+
+        if (val === 'ice_petrol') {
+          lblMileage.innerText = "Expected Mileage (km/L)";
+          lblFuelRate.innerText = "Petrol Rate (₹/L)";
+          iceMileage.value = "15";
+          iceFuelRate.value = VEHICLE_SPECS["ice_petrol"].rate.toString();
+        } else if (val === 'ice_diesel') {
+          lblMileage.innerText = "Expected Mileage (km/L)";
+          lblFuelRate.innerText = "Diesel Rate (₹/L)";
+          iceMileage.value = "18";
+          iceFuelRate.value = VEHICLE_SPECS["ice_diesel"].rate.toString();
+        } else if (val === 'ice_cng') {
+          lblMileage.innerText = "Expected Mileage (km/kg)";
+          lblFuelRate.innerText = "CNG Rate (₹/kg)";
+          iceMileage.value = "25";
+          iceFuelRate.value = VEHICLE_SPECS["ice_cng"].rate.toString();
+        }
+      } else {
+        lblStartSoC.innerText = "Starting SoC %";
+        acControlGroup.style.display = "block";
+        iceInputsGroup.style.display = "none";
+        bookingFields.style.display = "block";
+        bookingIcePanel.style.display = "none";
+        bookingCardHeader.innerText = "Step 2: Proximity Geofenced Booking";
+
+        document.getElementById('lblStopsHeading').innerText = "Target Stops Injected:";
+        document.getElementById('lblTimeHeading').innerText = "Est. Charging Time:";
+        document.getElementById('lblCostHeading').innerText = "Total Journey Cost:";
+      }
+      updateTelemetryHUD();
+    }
+
+    vehicleModel.addEventListener('change', handleVehicleChange);
+
+    // Setup autocomplete input suggestions (Nominatim proxy)
+    function setupAutocomplete(inputId, suggestionsId, locationKey) {
+      const input = document.getElementById(inputId);
+      const suggestionsContainer = document.getElementById(suggestionsId);
+      let timeout = null;
+
+      input.addEventListener('input', (e) => {
+        const query = e.target.value.trim();
+        clearTimeout(timeout);
+        if (query.length < 3) {
+          suggestionsContainer.innerHTML = '';
+          suggestionsContainer.style.display = 'none';
+          return;
+        }
+
+        timeout = setTimeout(async () => {
+          try {
+            const res = await fetch(`${API_BASE}/api/v1/geocode-autocomplete?q=${encodeURIComponent(query)}`);
+            if (res.ok) {
+              const data = await res.json();
+              suggestionsContainer.innerHTML = '';
+              if (data.length === 0) {
+                suggestionsContainer.style.display = 'none';
+                return;
+              }
+              
+              data.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'suggestion-item';
+                div.innerText = item.name;
+                div.addEventListener('click', () => {
+                  input.value = item.name;
+                  suggestionsContainer.innerHTML = '';
+                  suggestionsContainer.style.display = 'none';
+                  
+                  if (locationKey === 'start') {
+                    startLocationData = item;
+                  } else {
+                    endLocationData = item;
+                  }
+                  
+                  logConsole(`Selected ${locationKey === 'start' ? 'Origin' : 'Destination'}: ${item.name} (${item.latitude}, ${item.longitude})`, 'log');
+                  updateTelemetryHUD();
+                });
+                suggestionsContainer.appendChild(div);
+              });
+              suggestionsContainer.style.display = 'block';
+            }
+          } catch (err) {
+            console.error("Autocomplete fetch error:", err);
+          }
+        }, 400); // 400ms debounce
+      });
+
+      document.addEventListener('click', (e) => {
+        if (e.target !== input && e.target !== suggestionsContainer) {
+          suggestionsContainer.innerHTML = '';
+          suggestionsContainer.style.display = 'none';
+        }
+      });
+    }
+
+    // Teleport location simulator
+    teleportSelector.addEventListener('change', (e) => {
+      const mode = e.target.value;
+      if (mode === 'blr') {
+        currentLat = 12.9716; currentLon = 77.5946;
+      } else if (mode === 'chick') {
+        currentLat = 13.4350; currentLon = 77.7288;
+      } else if (mode === 'close') {
+        currentLat = 14.6500; currentLon = 77.6000;
+      }
+      userLocationDisplay.value = currentLat.toFixed(4) + ', ' + currentLon.toFixed(4);
+      checkGeofenceLocally();
+    });
+
+    // Native GPS fetcher
+    document.getElementById('btnGetGPS').addEventListener('click', () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(position => {
+          currentLat = position.coords.latitude;
+          currentLon = position.coords.longitude;
+          userLocationDisplay.value = currentLat.toFixed(4) + ', ' + currentLon.toFixed(4);
+          teleportSelector.value = "";
+          checkGeofenceLocally();
+          logConsole("Fetched real browser location coordinates: " + currentLat + ", " + currentLon);
+        }, error => {
+          alert("Could not access GPS. Please use simulation options instead.");
+        });
+      } else {
+        alert("Geolocation not supported by browser.");
+      }
+    });
+
+    // Geofence check for Zeon Charger at Anantapur (km 210)
+    function checkGeofenceLocally() {
+      const R = 6371;
+      const dLat = (14.6819 - currentLat) * Math.PI / 180;
+      const dLon = (77.6006 - currentLon) * Math.PI / 180;
+      const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(currentLat * Math.PI / 180) * Math.cos(14.6819 * Math.PI / 180) * 
+                Math.sin(dLon/2) * Math.sin(dLon/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+      const distance = R * c;
+      const eta = (distance / 80) * 60;
+
+      if (eta <= 15) {
+        geofenceBox.className = "geofence-alert geofence-unlocked";
+        geofenceTitle.innerText = "Geofence Unlocked (ETA: " + Math.round(eta) + " mins)";
+        geofenceDetail.innerText = "Proximity gate passed! You are " + distance.toFixed(1) + " km away. Tap below or use list slots to pre-book.";
+        btnBookCharger.removeAttribute('disabled');
+        btnBookCharger.style.background = "linear-gradient(135deg, var(--electric-blue) 0%, #0099ff 100%)";
+        btnBookCharger.style.color = "#000";
+        btnBookCharger.style.cursor = "pointer";
+      } else {
+        geofenceBox.className = "geofence-alert geofence-locked";
+        geofenceTitle.innerText = "Geofence Locked: Too Far Away";
+        geofenceDetail.innerText = "You are " + distance.toFixed(0) + " km away (ETA: " + Math.round(eta) + " mins). Booking is unlocked only within a 15-minute radius.";
+        btnBookCharger.setAttribute('disabled', 'true');
+        btnBookCharger.style.background = "#374151";
+        btnBookCharger.style.color = "#9ca3af";
+        btnBookCharger.style.cursor = "not-allowed";
+      }
+    }
+
+    // Dynamic slot booking prebook window
+    window.prebookSlot = function(connectorId, stationName) {
+      pendingPrebookConnectorId = connectorId;
+      pendingPrebookStationName = stationName;
+      upiModal.style.display = "flex";
+      upiPinInput.focus();
+    };
+
+    // Render structured available chargers/pumps dashboard below the map
+    function renderStationDashboard(stations) {
+      stationsDashboardContainer.innerHTML = '';
+      const heading = document.getElementById('lblStationsHeading');
+      const val = vehicleModel.value;
+      const isICE = val.startsWith('ice_');
+
+      if (isICE) {
+        heading.innerText = "Available Fuel Stations & Rates Along Route";
+      } else {
+        heading.innerText = "Available Charger Hubs & Rates Along Route";
+      }
+
+      if (!stations || stations.length === 0) {
+        stationsDashboardContainer.innerHTML = `<div style="color: var(--text-muted); font-size: 0.9rem;">No station facilities detected in the latitude corridor for this route. Try extending your range.</div>`;
+        return;
+      }
+
+      stations.forEach(st => {
+        const card = document.createElement('div');
+        card.className = 'station-card';
+
+        const distToStation = getHaversineDistanceJS(currentLat, currentLon, st.latitude, st.longitude);
+        const etaMins = (distToStation / 80) * 60;
+        const canPrebook = !st.is_ice_only && (etaMins <= 15.0);
+
+        let connHtml = '<div class="connector-grid">';
+        st.connectors.forEach(con => {
+          let actionBtn = '';
+          if (!st.is_ice_only) {
+            if (canPrebook) {
+              actionBtn = `<button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; font-weight:600; border-radius: 6px; background: linear-gradient(135deg, var(--glow-green) 0%, #10b981 100%); color: #000;" onclick="prebookSlot('${con.connector_id}', '${st.name}')">Pre-Book</button>`;
+            } else {
+              actionBtn = `<button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.75rem; font-weight:600; border-radius: 6px; background: #374151; color: #9ca3af; cursor: not-allowed;" disabled title="Lock requires <= 15 mins travel time (${distToStation.toFixed(0)} km away)">Too Far</button>`;
+            }
+          }
+
+          let rateText = st.is_ice_only ? `₹${con.rate_inr}/L` : `₹${con.rate_inr}/kWh`;
+          if (con.type.includes('CNG')) rateText = `₹${con.rate_inr}/kg`;
+          let powerText = con.power_kw > 0 ? `${con.power_kw} kW` : '';
+
+          connHtml += `
+            <div class="connector-item">
+              <div class="connector-left">
+                <span class="connector-type">${con.type}</span>
+                ${powerText ? `<span class="connector-power">${powerText}</span>` : ''}
+              </div>
+              <div class="connector-right">
+                <span class="connector-price">${rateText}</span>
+                ${actionBtn}
+              </div>
+            </div>
+          `;
+        });
+        connHtml += '</div>';
+
+        let statusText = '';
+        if (!st.is_ice_only) {
+          statusText = `<div>Total Slots: <strong style="color: var(--electric-blue);">3/4 Available</strong></div>`;
+        } else {
+          statusText = `<div style="color: var(--glow-green); font-weight: 600;">Drive-In Refuel Active</div>`;
+        }
+
+        card.innerHTML = `
+          <div class="station-header">
+            <div>
+              <div class="station-title">${st.name}</div>
+              <div class="station-operator">${st.operator}</div>
+            </div>
+            <span class="station-hours">${st.opening_hours}</span>
+          </div>
+          ${connHtml}
+          <div class="station-footer">
+            <span>Distance: ${distToStation.toFixed(1)} km (~${Math.round(etaMins)} mins ETA)</span>
+            ${statusText}
+          </div>
+        `;
+
+        stationsDashboardContainer.appendChild(card);
+
+        const markerColor = st.is_ice_only ? '#10b981' : '#eab308';
+        const marker = L.circleMarker([st.latitude, st.longitude], {
+          radius: 8,
+          fillColor: markerColor,
+          color: '#ffffff',
+          weight: 1.5,
+          opacity: 0.9,
+          fillOpacity: 0.75
+        }).addTo(markerGroup);
+
+        let popupText = `
+          <div style="font-family:'Outfit',sans-serif; color:#000; font-size: 0.85rem;">
+            <strong>${st.name}</strong><br>
+            CPO: ${st.operator} | Schedule: ${st.opening_hours}<br>
+            Connectors:<br>
+        `;
+        st.connectors.forEach(con => {
+          let rateText = st.is_ice_only ? `₹${con.rate_inr}/L` : `₹${con.rate_inr}/kWh`;
+          if (con.type.includes('CNG')) rateText = `₹${con.rate_inr}/kg`;
+          let speedText = con.power_kw > 0 ? `(${con.power_kw} kW)` : '';
+          popupText += `• ${con.type} ${speedText} - ${rateText}<br>`;
+        });
+        popupText += `</div>`;
+
+        marker.bindPopup(popupText);
+      });
+    }
+
+    // Helper to resolve typed location names to coordinates if needed
+    async function ensureGeocoded(inputId, currentData) {
+      const input = document.getElementById(inputId);
+      const text = input.value.trim();
+      if (!text) return currentData;
+
+      // If the text matches the currentData name exactly, return currentData
+      if (currentData && currentData.name === text) {
+        return currentData;
+      }
+
+      // Otherwise, fetch coordinates for the typed text
+      try {
+        const res = await fetch(`${API_BASE}/api/v1/geocode-autocomplete?q=${encodeURIComponent(text)}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            logConsole(`Auto-geocoded "${text}" to: ${data[0].name} (${data[0].latitude}, ${data[0].longitude})`, 'log');
+            return data[0];
+          }
+        }
+      } catch (err) {
+        console.error("Auto-geocoding error:", err);
+      }
+      return currentData;
+    }
+
+    // Call dynamic route planning API
+    document.getElementById('btnPlanRoute').addEventListener('click', async () => {
+      const planBtn = document.getElementById('btnPlanRoute');
+      const originalText = planBtn.innerText;
+      planBtn.innerText = "Geocoding & Planning Route...";
+      planBtn.disabled = true;
+
+      try {
+        // Resolve start and end locations on the fly
+        startLocationData = await ensureGeocoded('startLocationInput', startLocationData);
+        endLocationData = await ensureGeocoded('endLocationInput', endLocationData);
+
+        // Update input boxes to reflect the resolved coordinates name
+        document.getElementById('startLocationInput').value = startLocationData.name;
+        document.getElementById('endLocationInput').value = endLocationData.name;
+
+        const isICE = vehicleModel.value.startsWith('ice_');
+        const payload = {
+          vehicle_model_id: vehicleModel.value,
+          start_coords: startLocationData,
+          end_coords: endLocationData,
+          initial_soc_percent: parseFloat(startSoC.value),
+          climate_profile: { ac_mode: document.getElementById('climateMode').value },
+          mileage: isICE ? parseFloat(iceMileage.value) : 0.0,
+          fuel_rate: isICE ? parseFloat(iceFuelRate.value) : 0.0
+        };
+
+        logConsole("--> POST /api/v1/route-planner payload: " + JSON.stringify(payload), 'log');
+
+        const res = await fetch(API_BASE + '/api/v1/route-planner', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const errData = await res.json();
+          logConsole("API Server Error: " + JSON.stringify(errData), 'log');
+          alert("Server Error: " + (errData.error || "Route planner failed."));
+          return;
+        }
+
+        const data = await res.json();
+        logConsole("<-- ROUTE PLAN RESPONSE: " + JSON.stringify(data, null, 2), 'resp');
+
+        document.getElementById('outStops').innerText = data.route_summary.total_charge_stops;
+        document.getElementById('outTime').innerText = data.route_summary.total_duration_mins + " minutes";
+        document.getElementById('outCost').innerText = "₹" + data.route_summary.total_cost_inr;
+
+        // Calculate and update the first stop distance inside Telemetry HUD
+        const stops = data.waypoints.filter(wp => wp.type === 'CHARGE_STOP' || wp.type === 'FUEL_STOP');
+        const nextStopEl = document.getElementById('hudNextStop');
+        const nextStopRow = document.getElementById('hudNextStopRow');
+        if (stops.length > 0) {
+          const firstStop = stops[0];
+          const dist = getHaversineDistanceJS(
+            startLocationData.latitude, startLocationData.longitude,
+            firstStop.coordinates.latitude, firstStop.coordinates.longitude
+          );
+          nextStopEl.innerText = `${dist.toFixed(1)} km to ${firstStop.name}`;
+          nextStopRow.style.display = 'flex';
+        } else {
+          nextStopEl.innerText = "No stops required";
+          nextStopRow.style.display = 'flex';
+        }
+
+        routeLineGroup.clearLayers();
+        markerGroup.clearLayers();
+
+        timelineContainer.innerHTML = '';
+        data.waypoints.forEach(wp => {
+          const item = document.createElement('div');
+          item.className = 'timeline-item';
+
+          let badgeClass = 'charge';
+          let subtitle = '';
+          let markerColor = '#ffaa00';
+          let markerPopup = wp.name;
+
+          if (wp.type === 'ORIGIN') {
+            badgeClass = 'origin';
+            subtitle = `Starting Fuel/SoC: ${wp.soc_percent}% | Coordinates: ${wp.coordinates.latitude.toFixed(4)}, ${wp.coordinates.longitude.toFixed(4)}`;
+            markerColor = '#00f0ff';
+            markerPopup = `<strong>Start Point:</strong><br>${wp.name}<br>Starting SoC: ${wp.soc_percent}%`;
+          } else if (wp.type === 'DESTINATION') {
+            badgeClass = 'destination';
+            subtitle = `Expected Arrival SoC: ${wp.soc_percent}% | ETA: ${new Date(wp.eta).toLocaleTimeString()}`;
+            markerColor = '#ff3838';
+            markerPopup = `<strong>Destination:</strong><br>${wp.name}<br>Arrival SoC: ${wp.soc_percent}%`;
+          } else if (wp.type === 'CHARGE_STOP') {
+            badgeClass = 'charge';
+            subtitle = `Arrive SoC: ${wp.arrival_soc_percent}% → Charge to 80% | Time: ${wp.estimated_charge_duration_mins}m | Cost: ₹${wp.estimated_cost_inr}`;
+            markerColor = '#eab308';
+            markerPopup = `<strong>${wp.name}</strong><br>Arrive: ${wp.arrival_soc_percent}% → Depart: 80%<br>Time: ${wp.estimated_charge_duration_mins}m | Cost: ₹${wp.estimated_cost_inr}`;
+          } else if (wp.type === 'FUEL_STOP') {
+            badgeClass = 'refuel';
+            subtitle = `Arrive Fuel: ${wp.arrival_soc_percent}% → Refuel to 100% | Time: ${wp.estimated_charge_duration_mins}m | Cost: ₹${wp.estimated_cost_inr}`;
+            markerColor = '#10b981';
+            markerPopup = `<strong>${wp.name}</strong><br>Refuel: ${wp.arrival_soc_percent}% → 100%<br>Time: ${wp.estimated_charge_duration_mins}m | Cost: ₹${wp.estimated_cost_inr}`;
+          }
+
+          const marker = L.circleMarker([wp.coordinates.latitude, wp.coordinates.longitude], {
+            radius: wp.type === 'ORIGIN' || wp.type === 'DESTINATION' ? 12 : 9,
+            fillColor: markerColor,
+            color: '#ffffff',
+            weight: 2,
+            opacity: 1,
+            fillOpacity: 0.95
+          }).addTo(markerGroup);
+
+          marker.bindPopup(markerPopup);
+
+          item.innerHTML = `
+            <div class="timeline-badge ${badgeClass}"></div>
+            <div class="timeline-title">${wp.name}</div>
+            <div class="timeline-meta">${subtitle}</div>
+          `;
+          timelineContainer.appendChild(item);
+        });
+
+        // Draw connecting route polyline
+        L.polyline(data.route_polyline, {
+          color: '#00f0ff',
+          weight: 4,
+          opacity: 0.8,
+          dashArray: '5, 10'
+        }).addTo(routeLineGroup);
+
+        // Render station dashboard list & markers
+        renderStationDashboard(data.stations_along_route);
+
+        map.fitBounds(routeLineGroup.getBounds(), { padding: [30, 30] });
+        
+        // Make Share button visible
+        document.getElementById('btnShareRoute').style.display = 'flex';
+
+      } catch (err) {
+        logConsole("Network Connection Error: " + err.message, 'log');
+        alert("Failed to connect to API server. Please make sure the server is online.");
+      } finally {
+        planBtn.innerText = originalText;
+        planBtn.disabled = false;
+      }
+    });
+
+    // Proximity Booking triggers
+    btnBookCharger.addEventListener('click', () => {
+      pendingPrebookConnectorId = "99ee4a2a-711e-4cb2-83b6-9bbffb12c140";
+      pendingPrebookStationName = "Zeon Charging - Anantapur Highway";
+      upiModal.style.display = "flex";
+      upiPinInput.focus();
+    });
+
+    document.getElementById('btnCancelUpi').addEventListener('click', () => {
+      upiModal.style.display = "none";
+      upiPinInput.value = "";
+    });
+
+    document.getElementById('btnSubmitUpi').addEventListener('click', async () => {
+      if (upiPinInput.value.length < 4) {
+        alert("Please enter a valid mock UPI Pin.");
+        return;
+      }
+      upiModal.style.display = "none";
+      
+      const payload = {
+        user_id: "usr_whatsapp_tester",
+        connector_id: pendingPrebookConnectorId || "99ee4a2a-711e-4cb2-83b6-9bbffb12c140",
+        current_location: { latitude: currentLat, longitude: currentLon }
+      };
+
+      logConsole("--> POST /api/v1/secure-booking-lock payload: " + JSON.stringify(payload), 'log');
+
+      try {
+        const res = await fetch(API_BASE + '/api/v1/secure-booking-lock', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        logConsole("<-- BOOKING RESPONSE: " + JSON.stringify(data, null, 2), 'resp');
+
+        if (data.status === "LOCKED") {
+          bookingConfirmedPanel.style.display = "block";
+          const targetStationName = pendingPrebookStationName || "Zeon Charging - Anantapur Highway";
+          
+          bookingConfirmedPanel.innerHTML = `
+            <div style="text-align: center; font-weight: 800; color: var(--glow-green); margin-bottom: 0.5rem;">
+              RESERVATION CONFIRMED (15m Lock Active)
+            </div>
+            <div class="status-row">
+              <span>Charge Station:</span>
+              <span class="status-value">${targetStationName}</span>
+            </div>
+            <div class="status-row">
+              <span>Pre-Auth Blocked:</span>
+              <span class="status-value">₹500 (UPI AutoPay)</span>
+            </div>
+            <div class="status-row">
+              <span>Charger Unlock Pin:</span>
+              <div class="pin-display" id="unlockPin">${data.security_pin}</div>
+            </div>
+          `;
+          alert(`Mandate Authorized & Slot Secured at ${targetStationName}! PIN: ${data.security_pin}`);
+        } else {
+          alert("Booking failed: " + data.message);
+        }
+      } catch (err) {
+        logConsole("API Error: " + err.message, 'log');
+      }
+      upiPinInput.value = "";
+    });
+
+    function drawStaticCities() {
+      const CITIES = [
+        {lat: 12.9716, lng: 77.5946, name: "Bengaluru"},
+        {lat: 13.4350, lng: 77.7288, name: "Chickballapur"},
+        {lat: 14.6819, lng: 77.6006, name: "Anantapur"},
+        {lat: 15.8281, lng: 78.0373, name: "Kurnool"},
+        {lat: 17.3850, lng: 78.4867, name: "Hyderabad"}
+      ];
+      CITIES.forEach(city => {
+        L.circleMarker([city.lat, city.lng], {
+          radius: 7,
+          fillColor: '#555555',
+          color: '#ffffff',
+          weight: 1.5,
+          opacity: 0.8,
+          fillOpacity: 0.6
+        }).addTo(markerGroup).bindPopup(`<strong>${city.name}</strong>`);
+      });
+    }
+
+    handleVehicleChange();
+    checkGeofenceLocally();
+    drawStaticCities();
+    loadLiveFuelPrices();
+
+    setupAutocomplete('startLocationInput', 'startSuggestions', 'start');
+    setupAutocomplete('endLocationInput', 'endSuggestions', 'end');
+
+    document.getElementById('btnSwapLocations').addEventListener('click', () => {
+      const startInput = document.getElementById('startLocationInput');
+      const endInput = document.getElementById('endLocationInput');
+      const tempText = startInput.value;
+      startInput.value = endInput.value;
+      endInput.value = tempText;
+
+      const tempData = startLocationData;
+      startLocationData = endLocationData;
+      endLocationData = tempData;
+
+      logConsole("Swapped Origin & Destination", 'log');
+      updateTelemetryHUD();
+    });
+
+    // Share Route Plan logic
+    document.getElementById('btnShareRoute').addEventListener('click', async () => {
+      const startVal = document.getElementById('startLocationInput').value;
+      const endVal = document.getElementById('endLocationInput').value;
+      const vehicleVal = document.getElementById('vehicleModel').value;
+      const socVal = document.getElementById('startSoC').value;
+      const mileageVal = document.getElementById('iceMileage') ? document.getElementById('iceMileage').value : '';
+
+      const shareUrl = `${window.location.origin}${window.location.pathname}?start=${encodeURIComponent(startVal)}&end=${encodeURIComponent(endVal)}&vehicle=${encodeURIComponent(vehicleVal)}&soc=${encodeURIComponent(socVal)}&mileage=${encodeURIComponent(mileageVal)}`;
+
+      const shareBtn = document.getElementById('btnShareRoute');
+      
+      if (navigator.share) {
+        try {
+          await navigator.share({
+            title: `Trip Plan: ${startVal} to ${endVal}`,
+            text: `Check out my optimized highway route plan from ${startVal} to ${endVal} using Multi-Vendor Route Aggregator!`,
+            url: shareUrl
+          });
+          logConsole("Successfully shared via system dialog", "log");
+        } catch (err) {
+          console.log("Error sharing:", err);
+        }
+      } else {
+        // Fallback: Copy to clipboard
+        try {
+          await navigator.clipboard.writeText(shareUrl);
+          const originalHTML = shareBtn.innerHTML;
+          shareBtn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"/></svg>
+            Copied!
+          `;
+          logConsole(`Copied trip share link to clipboard: ${shareUrl}`, "log");
+          setTimeout(() => {
+            shareBtn.innerHTML = originalHTML;
+          }, 2000);
+        } catch (err) {
+          alert("Failed to copy link: " + shareUrl);
+        }
+      }
+    });
+
+    // Contact Modal Toggle
+    const contactFab = document.getElementById('contactFab');
+    const contactModal = document.getElementById('contactModal');
+    const btnCancelContact = document.getElementById('btnCancelContact');
+    const btnSubmitContact = document.getElementById('btnSubmitContact');
+    const contactMessage = document.getElementById('contactMessage');
+
+    contactFab.addEventListener('click', () => {
+      contactModal.style.display = 'flex';
+      contactMessage.focus();
+    });
+
+    btnCancelContact.addEventListener('click', () => {
+      contactModal.style.display = 'none';
+      contactMessage.value = '';
+    });
+
+    contactModal.addEventListener('click', (e) => {
+      if (e.target === contactModal) {
+        contactModal.style.display = 'none';
+        contactMessage.value = '';
+      }
+    });
+
+    btnSubmitContact.addEventListener('click', () => {
+      const msg = contactMessage.value.trim();
+      if (!msg) {
+        alert("Please write a message before sending.");
+        return;
+      }
+
+      const prefix = "Hello Thakur Ankur Kumar Pratap Singh, regarding the EV/ICE Route Aggregator: ";
+      const waUrl = `https://wa.me/917506009321?text=${encodeURIComponent(prefix + msg)}`;
+      
+      logConsole(`Redirecting to WhatsApp to send feedback: "${msg}"`, 'log');
+      window.open(waUrl, '_blank');
+      
+      contactModal.style.display = 'none';
+      contactMessage.value = '';
+    });
+
+    // Check and load share parameters from URL on load
+    function checkShareParameters() {
+      const params = new URLSearchParams(window.location.search);
+      const startParam = params.get('start');
+      const endParam = params.get('end');
+      const vehicleParam = params.get('vehicle');
+      const socParam = params.get('soc');
+      const mileageParam = params.get('mileage');
+
+      if (startParam && endParam) {
+        document.getElementById('startLocationInput').value = startParam;
+        document.getElementById('endLocationInput').value = endParam;
+        
+        if (vehicleParam) {
+          document.getElementById('vehicleModel').value = vehicleParam;
+          handleVehicleChange();
+        }
+        if (socParam) {
+          document.getElementById('startSoC').value = socParam;
+        }
+        if (mileageParam && document.getElementById('iceMileage')) {
+          document.getElementById('iceMileage').value = mileageParam;
+        }
+        
+        updateTelemetryHUD();
+        
+        // Wait for Leaflet maps to initialize before calling route planning click
+        setTimeout(() => {
+          document.getElementById('btnPlanRoute').click();
+        }, 1200);
+      }
+    }
+
+    startSoC.addEventListener('input', updateTelemetryHUD);
+    document.getElementById('climateMode').addEventListener('change', updateTelemetryHUD);
+    iceMileage.addEventListener('input', updateTelemetryHUD);
+    iceFuelRate.addEventListener('input', updateTelemetryHUD);
+
+    // Read share parameters on page load
+    checkShareParameters();
+  </script>
+</body>
+</html>

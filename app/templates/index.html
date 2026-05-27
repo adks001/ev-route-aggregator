@@ -1961,7 +1961,13 @@
           
           logConsole(`[SMS GATEWAY] OTP request for +91 ${phone} dispatched. OTP Code (Dev Preview): ${generatedBookingOtp}`, 'log');
           
-          alert(`📱 Verification OTP requested via backend API for +91 ${phone}!\n\nCheck the "API Telemetry Stream" at the bottom of the page to find your 4-digit code.`);
+          if (generatedBookingOtp !== "sent_via_sms") {
+            // Autofill the OTP input field for developer convenience
+            document.getElementById('bookingOtp').value = generatedBookingOtp;
+            alert(`📱 Mock SMS Sent to +91 ${phone}\n\nYour OTP Verification Code is: ${generatedBookingOtp}\n\n(It has been automatically filled in the field for you!)`);
+          } else {
+            alert(`📱 Real SMS Sent to +91 ${phone}!\n\nPlease enter the verification code received on your phone.`);
+          }
           
           // UI transition
           document.getElementById('phoneInputGroup').style.display = "none";

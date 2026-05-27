@@ -500,11 +500,11 @@ def route_planner(request_data: dict, db: Session = Depends(get_db)):
                 # Fetch connector details from database matching the fuel/charger type
                 connector_query = db.query(Connector).filter(Connector.station_id == s.id)
                 if is_ice:
-                    if vehicle_model_id == "ice_petrol":
+                    if "petrol" in vehicle_model_id:
                         connector = connector_query.filter(Connector.type.like("%Petrol%")).first()
-                    elif vehicle_model_id == "ice_diesel":
+                    elif "diesel" in vehicle_model_id:
                         connector = connector_query.filter(Connector.type.like("%Diesel%")).first()
-                    elif vehicle_model_id == "ice_cng":
+                    elif "cng" in vehicle_model_id:
                         connector = connector_query.filter(Connector.type.like("%CNG%")).first()
                     else:
                         connector = connector_query.first()

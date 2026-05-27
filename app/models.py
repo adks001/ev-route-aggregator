@@ -91,10 +91,12 @@ def seed_database(db: Session):
         {"id": "mg_zs_ev", "name": "MG ZS EV (50.3 kWh, 461 km)", "battery_kwh": 50.3, "range_km": 461.0, "is_ice": False},
         {"id": "mg_windsor_ev", "name": "MG Windsor EV (38-50 kWh, 332-460 km)", "battery_kwh": 50.0, "range_km": 460.0, "is_ice": False},
 
-        # Non-EV Combustion (Petrol, Diesel, CNG)
-        {"id": "ice_petrol", "name": "Petrol Car (Combustion)", "battery_kwh": 50.0, "range_km": 15.0, "is_ice": True}, # battery_kwh represents tank size (L), range_km represents default mileage (km/L)
-        {"id": "ice_diesel", "name": "Diesel Car (Combustion)", "battery_kwh": 55.0, "range_km": 18.0, "is_ice": True},
-        {"id": "ice_cng", "name": "CNG Car (Combustion)", "battery_kwh": 10.0, "range_km": 25.0, "is_ice": True}
+        # Non-EV Combustion & Hybrid Cars
+        {"id": "ice_petrol", "name": "Petrol Car", "battery_kwh": 50.0, "range_km": 15.0, "is_ice": True}, # battery_kwh represents tank size (L), range_km represents default mileage (km/L)
+        {"id": "ice_diesel", "name": "Diesel Car", "battery_kwh": 55.0, "range_km": 18.0, "is_ice": True},
+        {"id": "ice_cng", "name": "CNG Car", "battery_kwh": 10.0, "range_km": 25.0, "is_ice": True},
+        {"id": "ice_petrol_hybrid", "name": "Petrol-Hybrid Car", "battery_kwh": 50.0, "range_km": 24.0, "is_ice": True},
+        {"id": "ice_diesel_hybrid", "name": "Diesel-Hybrid Car", "battery_kwh": 55.0, "range_km": 26.0, "is_ice": True}
     ]
 
     for v in vehicles_data:

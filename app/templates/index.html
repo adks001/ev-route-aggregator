@@ -160,6 +160,7 @@
       justify-content: center;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       border-radius: 50%;
+      flex: none;
     }
     .btn-swap:hover {
       background: rgba(0, 240, 255, 0.1);
@@ -1336,7 +1337,7 @@
       });
 
       document.addEventListener('click', (e) => {
-        if (e.target !== input && e.target !== suggestionsContainer) {
+        if (e.target !== input && !suggestionsContainer.contains(e.target)) {
           suggestionsContainer.innerHTML = '';
           suggestionsContainer.style.display = 'none';
         }

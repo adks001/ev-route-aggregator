@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>EV Mobility & Intelligent Route Aggregator</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#070913">
+  
+  <!-- Apple/iOS Mobile Web App Support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="EV Route">
+  <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
   <!-- LEAFLET.JS MAP LIBRARY (NO API KEY REQUIRED) -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -1826,6 +1836,19 @@
 
     // Read share parameters on page load
     checkShareParameters();
+
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then((reg) => {
+            logConsole("PWA ServiceWorker registered with scope: " + reg.scope, "log");
+          })
+          .catch((err) => {
+            console.error("PWA ServiceWorker registration failed:", err);
+          });
+      });
+    }
   </script>
 </body>
 </html>

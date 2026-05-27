@@ -6,9 +6,10 @@ import math
 import uuid
 from datetime import datetime, timedelta
 from fastapi import FastAPI, Depends, Request, HTTPException
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from app.database import Base, engine, SessionLocal, get_db
@@ -56,6 +57,19 @@ app.add_middleware(
 
 # Initialize templates folder
 templates = Jinja2Templates(directory="app/templates")
+
+# Mount static folder for PWA assets and icons
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+# Serve PWA manifest
+@app.get("/manifest.json")
+def get_manifest():
+    return FileResponse("app/static/manifest.json", media_type="application/json")
+
+# Serve PWA service worker from root to allow full scope access
+@app.get("/service-worker.js")
+def get_service_worker():
+    return FileResponse("app/static/service-worker.js", media_type="application/javascript")
 
 # Startup event to auto-create and seed database
 @app.on_event("startup")

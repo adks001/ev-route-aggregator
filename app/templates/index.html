@@ -653,52 +653,46 @@
       <div class="form-group">
         <label for="vehicleModel">Select Vehicle Model</label>
         <select id="vehicleModel">
-          <!-- GROUPED EV PASSENGER FLEET -->
-          <optgroup label="Mercedes-Benz">
-            <option value="mercedes_eqs_suv">Mercedes-Benz EQS SUV (~108-118 kWh, Up to 857 km)</option>
-          </optgroup>
-          <optgroup label="BMW">
+          <!-- PREMIUM LONG-RANGE EVs -->
+          <optgroup label="Premium Long-Range EVs">
+            <option value="mercedes_eqs_sedan">Mercedes-Benz EQS Sedan (~107.8 kWh, Up to 857 km)</option>
+            <option value="lucid_air">Lucid Air (~112 kWh, Up to 800 km)</option>
+            <option value="mahindra_be_6">Mahindra BE 6 (79 kWh, Up to 683 km)</option>
+            <option value="kia_ev6_gt_line">Kia EV6 GT Line (84 kWh, Up to 708 km)</option>
+            <option value="tesla_model3_lr">Tesla Model 3 Long Range (~79.5-82 kWh, Up to 750 km)</option>
             <option value="bmw_i7">BMW i7 (101.7 kWh, Up to 625 km)</option>
-            <option value="bmw_ix">BMW iX (76.6 kWh, 575 km)</option>
+            <option value="byd_seal_extended">BYD Seal (Extended) (82.56 kWh, Up to 650 km)</option>
+            <option value="porsche_taycan_turbos">Porsche Taycan (Turbo S) (93 kWh, Up to 678 km)</option>
+            <option value="mercedes_eqs_suv" selected>Mercedes-Benz EQS SUV (122 kWh, Up to 820 km)</option>
+            <option value="cadillac_escalade_iq">Cadillac Escalade IQ (205 kWh, Up to 748 km)</option>
           </optgroup>
-          <optgroup label="Porsche">
-            <option value="porsche_taycan">Porsche Taycan (Up to 105 kWh, Up to 705 km)</option>
-            <option value="porsche_macan_ev">Porsche Macan EV (95 kWh, 624 km)</option>
+
+          <!-- MID-RANGE & POPULAR SUV/CROSSOVERS -->
+          <optgroup label="Mid-Range & Popular SUV/Crossovers">
+            <option value="hyundai_ioniq">Hyundai Ioniq 5/6 (84 kWh, Up to 630 km)</option>
+            <option value="kia_ev9">Kia EV9 (99.8 kWh, Up to 560 km)</option>
+            <option value="tesla_modely_juniper">Tesla Model Y Juniper (78 kWh, Up to 525 km)</option>
+            <option value="volvo_ex40">Volvo EX40 (78 kWh, Up to 590 km)</option>
+            <option value="mahindra_xev_9e">Mahindra XEV 9e (79 kWh, Up to 650 km)</option>
+            <option value="byd_atto_3">BYD Atto 3 (60.5 kWh, Up to 520 km)</option>
+            <option value="mg_zs_ev">MG ZS EV (68 kWh, Up to 460 km)</option>
+            <option value="bmw_ix">BMW iX1/iX3 (64.7 kWh, Up to 500 km)</option>
+            <option value="tata_harrier_ev">Tata Harrier EV (75 kWh, Up to 627 km)</option>
+            <option value="audi_q8_etron">Audi Q8 e-tron (114 kWh, Up to 580 km)</option>
           </optgroup>
-          <optgroup label="Mahindra (Electric)">
-            <option value="mahindra_be_6">Mahindra BE 6 (79 kWh, 683 km)</option>
-            <option value="mahindra_xev_9e">Mahindra XEV 9e (~80 kWh, 656 km)</option>
-            <option value="mahindra_xuv400">Mahindra XUV400 EV (39.4 kWh, 456 km)</option>
-          </optgroup>
-          <optgroup label="Kia">
-            <option value="kia_ev6">Kia EV6 (77.4 kWh, 663 km)</option>
-          </optgroup>
-          <optgroup label="BYD">
-            <option value="byd_seal">BYD Seal (82.5 kWh, 650 km)</option>
-          </optgroup>
-          <optgroup label="Tata Motors">
-            <option value="tata_harrier_ev">Tata Harrier EV (~60-80 kWh, 627 km)</option>
-            <option value="tata_nexon_ev_lr" selected>Tata Nexon EV Long Range (40.5 kWh, 465 km)</option>
-          </optgroup>
-          <optgroup label="Lotus">
-            <option value="lotus_eletre">Lotus Eletre (112 kWh, 600 km)</option>
-          </optgroup>
-          <optgroup label="Volvo">
-            <option value="volvo_ex40">Volvo EX40 (XC40) (79 kWh, 592 km)</option>
-          </optgroup>
-          <optgroup label="Audi">
-            <option value="audi_q8_etron">Audi Q8 e-tron (114 kWh, 582 km)</option>
-          </optgroup>
-          <optgroup label="Hyundai">
-            <option value="hyundai_ioniq_5">Hyundai IONIQ 5 (72.6 kWh, ~550 km)</option>
-            <option value="hyundai_kona">Hyundai Kona Electric (39.2-65.4 kWh, 452-490 km)</option>
-          </optgroup>
-          <optgroup label="Maruti Suzuki">
-            <option value="maruti_evitara">Maruti Suzuki e Vitara (61 kWh, 543 km)</option>
-          </optgroup>
-          <optgroup label="MG">
-            <option value="mg_zs_ev">MG ZS EV (50.3 kWh, 461 km)</option>
-            <option value="mg_windsor_ev">MG Windsor EV (38-50 kWh, 332-460 km)</option>
+
+          <!-- AFFORDABLE & COMPACT EVs -->
+          <optgroup label="Affordable & Compact EVs">
+            <option value="tata_punch_ev">Tata Punch EV (40 kWh, Up to 350 km)</option>
+            <option value="mg_windsor_ev">MG Windsor EV (52.9 kWh, Up to 450 km)</option>
+            <option value="maruti_evitara">Maruti Suzuki e Vitara (61 kWh, Up to 540 km)</option>
+            <option value="hyundai_kona">Hyundai Inster/Kona (65 kWh, Up to 490 km)</option>
+            <option value="tata_tiago_ev">Tata Tiago EV (24 kWh, Up to 315 km)</option>
+            <option value="citroen_ec3">Citroën E-C3 (44/29 kWh, Up to 320 km)</option>
+            <option value="mg_comet_ev">MG Comet EV (17.3 kWh, Up to 230 km)</option>
+            <option value="kia_ev3">Kia EV3 (81 kWh, Up to 600 km)</option>
+            <option value="vinfast_vf6">VinFast VF6/VF7 (59/75 kWh, Up to 460 km)</option>
+            <option value="mini_countryman_electric">Mini Countryman Electric (66/64 kWh, Up to 460 km)</option>
           </optgroup>
           
           <!-- GROUPED NON-EV COMBUSTION FLEET -->
@@ -987,6 +981,60 @@
     </div>
   </div>
 
+  <!-- STATION DETAILS POPUP -->
+  <div class="upi-modal" id="stationDetailsModal" style="display: none;">
+    <div class="upi-card" style="text-align: left; max-width: 480px; width: 90%;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.75rem;">
+        <span class="upi-logo" style="margin: 0; font-size: 1.25rem; color: var(--electric-blue);" id="detailLogo">Jio-BP Pulse</span>
+        <button type="button" id="btnCloseDetails" style="background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 1.25rem; margin-top: 1rem;">
+        <div>
+          <h2 id="detailStationName" style="font-size: 1.25rem; font-weight: 800; color: #fff; margin: 0; line-height: 1.3;">Jio-BP Pulse - Nashik Bypass</h2>
+          <div id="detailStationOperator" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.25rem;">Operator: Jio-BP Pulse</div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: rgba(255,255,255,0.02); padding: 0.75rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
+          <div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">Operating Hours</div>
+            <div id="detailOpeningHours" style="color: #fff; font-weight: 600; margin-top: 0.15rem;">Open 24 Hours</div>
+          </div>
+          <div>
+            <div style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">Coordinates</div>
+            <div id="detailCoordinates" style="color: #fff; font-weight: 600; margin-top: 0.15rem; font-family: 'JetBrains Mono', monospace;">19.9975, 73.7898</div>
+          </div>
+          <div style="grid-column: span 2; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 0.5rem; margin-top: 0.25rem;">
+            <div style="color: var(--text-muted); font-size: 0.75rem; text-transform: uppercase; font-weight: 600;">Mock Help Desk Contact</div>
+            <div id="detailHelpline" style="color: var(--electric-blue); font-weight: 600; margin-top: 0.15rem;">+91 90000 12345</div>
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Available Connectors / Nozzles:</div>
+          <div id="detailConnectorsList" style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <div>
+          <div style="font-size: 0.85rem; font-weight: 700; color: #fff; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.5px;">Amenities Nearby:</div>
+          <div id="detailAmenities" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; margin-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 1rem;">
+          <button class="btn" id="btnDetailPrebook" style="flex: 1;">Pre-Book Slot</button>
+          <a id="btnDetailNavigate" href="#" target="_blank" class="btn btn-secondary" style="flex: 1; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.75rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" height="20" viewBox="0 -960 960 960" width="20" fill="currentColor"><path d="M480-480q33 0 56.5-23.5T560-560q0-33-23.5-56.5T480-640q-33 0-56.5 23.5T400-560q0 33 23.5 56.5T480-480Zm0 294q122-112 181-203.5T720-552q0-109-69.5-178.5T480-800q-101 0-170.5 69.5T240-552q0 71 59 162.5T480-186Zm0 106Q319-224 239.5-327T160-552q0-150 96.5-249T480-900q143.5 0 240 99t96.5 249q0 125-79.5 228T480-80Zm0-472Z"/></svg>
+            Navigate
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- FLOATING CONTACT ACTION BUTTON -->
   <div class="contact-fab" id="contactFab" title="Feedback & Developer Support">
     <svg xmlns="http://www.w3.org/2000/svg" height="28" viewBox="0 -960 960 960" width="28" fill="currentColor"><path d="M240-400h320v-80H240v80Zm0-120h480v-80H240v80Zm0-120h480v-80H240v80ZM80-80v-720q0-33 23.5-56.5T160-880h640q33 0 56.5 23.5T880-800v480q0 33-23.5 56.5T880-240H240L80-80Zm80-193 111-111h529v-416H160v640Zm0 0v-640 640Z"/></svg>
@@ -1032,27 +1080,41 @@
 
     // Client-side Database of Vehicle Specifications
     const VEHICLE_SPECS = {
-      // EVs
-      "mercedes_eqs_suv": { name: "Mercedes-Benz EQS SUV", battery: 118.0, range: 857.0, isIce: false },
-      "bmw_i7": { name: "BMW i7", battery: 101.7, range: 625.0, isIce: false },
-      "bmw_ix": { name: "BMW iX", battery: 76.6, range: 575.0, isIce: false },
-      "porsche_taycan": { name: "Porsche Taycan", battery: 105.0, range: 705.0, isIce: false },
-      "porsche_macan_ev": { name: "Porsche Macan EV", battery: 95.0, range: 624.0, isIce: false },
+      // Premium Long-Range EVs
+      "mercedes_eqs_sedan": { name: "Mercedes-Benz EQS Sedan", battery: 107.8, range: 857.0, isIce: false },
+      "lucid_air": { name: "Lucid Air", battery: 112.0, range: 800.0, isIce: false },
       "mahindra_be_6": { name: "Mahindra BE 6", battery: 79.0, range: 683.0, isIce: false },
-      "mahindra_xev_9e": { name: "Mahindra XEV 9e", battery: 80.0, range: 656.0, isIce: false },
-      "mahindra_xuv400": { name: "Mahindra XUV400 EV", battery: 39.4, range: 456.0, isIce: false },
-      "kia_ev6": { name: "Kia EV6", battery: 77.4, range: 663.0, isIce: false },
-      "byd_seal": { name: "BYD Seal", battery: 82.5, range: 650.0, isIce: false },
-      "tata_harrier_ev": { name: "Tata Harrier EV", battery: 80.0, range: 627.0, isIce: false },
-      "tata_nexon_ev_lr": { name: "Tata Nexon EV Long Range", battery: 40.5, range: 465.0, isIce: false },
-      "lotus_eletre": { name: "Lotus Eletre", battery: 112.0, range: 600.0, isIce: false },
-      "volvo_ex40": { name: "Volvo EX40 (XC40)", battery: 79.0, range: 592.0, isIce: false },
-      "audi_q8_etron": { name: "Audi Q8 e-tron", battery: 114.0, range: 582.0, isIce: false },
-      "hyundai_ioniq_5": { name: "Hyundai IONIQ 5", battery: 72.6, range: 550.0, isIce: false },
-      "hyundai_kona": { name: "Hyundai Kona Electric", battery: 65.4, range: 490.0, isIce: false },
-      "maruti_evitara": { name: "Maruti Suzuki e Vitara", battery: 61.0, range: 543.0, isIce: false },
-      "mg_zs_ev": { name: "MG ZS EV", battery: 50.3, range: 461.0, isIce: false },
-      "mg_windsor_ev": { name: "MG Windsor EV", battery: 50.0, range: 460.0, isIce: false },
+      "kia_ev6_gt_line": { name: "Kia EV6 GT Line", battery: 84.0, range: 708.0, isIce: false },
+      "tesla_model3_lr": { name: "Tesla Model 3 Long Range", battery: 82.0, range: 750.0, isIce: false },
+      "bmw_i7": { name: "BMW i7", battery: 101.7, range: 625.0, isIce: false },
+      "byd_seal_extended": { name: "BYD Seal (Extended)", battery: 82.56, range: 650.0, isIce: false },
+      "porsche_taycan_turbos": { name: "Porsche Taycan (Turbo S)", battery: 93.0, range: 678.0, isIce: false },
+      "mercedes_eqs_suv": { name: "Mercedes-Benz EQS SUV", battery: 122.0, range: 820.0, isIce: false },
+      "cadillac_escalade_iq": { name: "Cadillac Escalade IQ", battery: 205.0, range: 748.0, isIce: false },
+      
+      // Mid-Range & Popular SUV/Crossovers
+      "hyundai_ioniq": { name: "Hyundai Ioniq 5/6", battery: 84.0, range: 630.0, isIce: false },
+      "kia_ev9": { name: "Kia EV9", battery: 99.8, range: 560.0, isIce: false },
+      "tesla_modely_juniper": { name: "Tesla Model Y Juniper", battery: 78.0, range: 525.0, isIce: false },
+      "volvo_ex40": { name: "Volvo EX40", battery: 78.0, range: 590.0, isIce: false },
+      "mahindra_xev_9e": { name: "Mahindra XEV 9e", battery: 79.0, range: 650.0, isIce: false },
+      "byd_atto_3": { name: "BYD Atto 3", battery: 60.5, range: 520.0, isIce: false },
+      "mg_zs_ev": { name: "MG ZS EV", battery: 68.0, range: 460.0, isIce: false },
+      "bmw_ix": { name: "BMW iX1/iX3", battery: 64.7, range: 500.0, isIce: false },
+      "tata_harrier_ev": { name: "Tata Harrier EV", battery: 75.0, range: 627.0, isIce: false },
+      "audi_q8_etron": { name: "Audi Q8 e-tron", battery: 114.0, range: 580.0, isIce: false },
+
+      // Affordable & Compact EVs
+      "tata_punch_ev": { name: "Tata Punch EV", battery: 40.0, range: 350.0, isIce: false },
+      "mg_windsor_ev": { name: "MG Windsor EV", battery: 52.9, range: 450.0, isIce: false },
+      "maruti_evitara": { name: "Maruti Suzuki e Vitara", battery: 61.0, range: 540.0, isIce: false },
+      "hyundai_kona": { name: "Hyundai Inster/Kona", battery: 65.0, range: 490.0, isIce: false },
+      "tata_tiago_ev": { name: "Tata Tiago EV", battery: 24.0, range: 315.0, isIce: false },
+      "citroen_ec3": { name: "Citroën E-C3", battery: 44.0, range: 320.0, isIce: false },
+      "mg_comet_ev": { name: "MG Comet EV", battery: 17.3, range: 230.0, isIce: false },
+      "kia_ev3": { name: "Kia EV3", battery: 81.0, range: 600.0, isIce: false },
+      "vinfast_vf6": { name: "VinFast VF6/VF7", battery: 59.0, range: 460.0, isIce: false },
+      "mini_countryman_electric": { name: "Mini Countryman Electric", battery: 66.0, range: 460.0, isIce: false },
       
       // ICE (Combustion Engines)
       "ice_petrol": { name: "Petrol Car", battery: 50.0, range: 15.0, isIce: true, rate: 104.5 },
@@ -1482,7 +1544,7 @@
         card.innerHTML = `
           <div class="station-header">
             <div>
-              <div class="station-title">${st.name}</div>
+              <div class="station-title" style="cursor: pointer; text-decoration: underline; color: var(--electric-blue);" onclick="showStationDetails('${st.id}')">${st.name}</div>
               <div class="station-operator">${st.operator}</div>
             </div>
             <span class="station-hours">${st.opening_hours}</span>
@@ -1663,9 +1725,14 @@
 
           marker.bindPopup(markerPopup);
 
+          const isStop = wp.type === 'CHARGE_STOP' || wp.type === 'FUEL_STOP';
+          const titleHtml = isStop 
+            ? `<div class="timeline-title" style="cursor: pointer; text-decoration: underline; color: var(--electric-blue);" onclick="showStationDetails('${wp.station_id}')">${wp.name}</div>`
+            : `<div class="timeline-title">${wp.name}</div>`;
+
           item.innerHTML = `
             <div class="timeline-badge ${badgeClass}"></div>
-            <div class="timeline-title">${wp.name}</div>
+            ${titleHtml}
             <div class="timeline-meta">${subtitle}</div>
           `;
           timelineContainer.appendChild(item);
@@ -1693,6 +1760,96 @@
       } finally {
         planBtn.innerText = originalText;
         planBtn.disabled = false;
+      }
+    });
+
+    // Station Details popup controller
+    window.showStationDetails = function(stationId) {
+      if (!window.stationsAlongRoute) return;
+      
+      const st = window.stationsAlongRoute.find(s => s.id === stationId);
+      if (!st) return;
+
+      document.getElementById('detailLogo').innerText = st.operator || 'Station Details';
+      document.getElementById('detailStationName').innerText = st.name;
+      document.getElementById('detailStationOperator').innerText = 'Operator: ' + (st.operator || 'N/A');
+      document.getElementById('detailOpeningHours').innerText = st.opening_hours || 'Open 24 Hours';
+      document.getElementById('detailCoordinates').innerText = `${st.latitude.toFixed(4)}, ${st.longitude.toFixed(4)}`;
+
+      // Generate helper telephone based on station ID hash for a realistic masked phone number
+      let hash = 0;
+      for (let i = 0; i < st.id.length; i++) hash += st.id.charCodeAt(i);
+      const helplineNum = `+91 98801 0${(100 + (hash % 900))}XX`;
+      document.getElementById('detailHelpline').innerText = helplineNum;
+
+      // Render connectors dynamically
+      let connHtml = '';
+      st.connectors.forEach((con, idx) => {
+        // First connector is Occupied if there are multiple, otherwise all are available
+        const isOccupied = (st.connectors.length > 1 && idx === 0);
+        const statusColor = isOccupied ? 'var(--warning-red)' : 'var(--glow-green)';
+        const statusText = isOccupied ? '● Occupied' : '● Available';
+        const rateText = st.is_ice_only ? `₹${con.rate_inr}/L` : `₹${con.rate_inr}/kWh`;
+        
+        connHtml += `
+          <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(255,255,255,0.02); padding: 0.5rem 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); font-size: 0.85rem;">
+            <div>
+              <span style="font-weight: 600; color: #fff;">${con.type}</span>
+              ${con.power_kw > 0 ? `<span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 0.5rem;">(${con.power_kw} kW)</span>` : ''}
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span style="font-weight: 700; color: #fff;">${rateText}</span>
+              <span style="color: ${statusColor}; font-weight: 600; font-size: 0.8rem;">${statusText}</span>
+            </div>
+          </div>
+        `;
+      });
+      document.getElementById('detailConnectorsList').innerHTML = connHtml;
+
+      // Render amenities
+      let amenities = [];
+      if (st.is_ice_only) {
+        amenities = ['Restrooms 🚻', 'Snack Shop 🛍️', 'ATM 🏪'];
+      } else {
+        amenities = ['Food Court 🍔', 'Cafe ☕', 'Restrooms 🚻', 'WiFi 📶'];
+      }
+      
+      let amenitiesHtml = amenities.map(am => `
+        <span style="background: rgba(255,255,255,0.05); color: #fff; padding: 0.35rem 0.6rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(255,255,255,0.08);">
+          ${am}
+        </span>
+      `).join('');
+      document.getElementById('detailAmenities').innerHTML = amenitiesHtml;
+
+      // Bind Pre-book button action (directs to UPI pre-booking modal)
+      const prebookBtn = document.getElementById('btnDetailPrebook');
+      const availableCon = st.connectors.find((con, idx) => !(st.connectors.length > 1 && idx === 0)) || st.connectors[0];
+      
+      if (availableCon) {
+        prebookBtn.style.display = 'block';
+        prebookBtn.onclick = function() {
+          document.getElementById('stationDetailsModal').style.display = 'none';
+          window.prebookSlot(availableCon.connector_id, st.name);
+        };
+      } else {
+        prebookBtn.style.display = 'none';
+      }
+
+      // Bind Navigate link action to Google Maps
+      document.getElementById('btnDetailNavigate').href = `https://www.google.com/maps/search/?api=1&query=${st.latitude},${st.longitude}`;
+
+      // Open Modal
+      document.getElementById('stationDetailsModal').style.display = 'flex';
+    };
+
+    // Close Modal Listeners
+    const detailsModal = document.getElementById('stationDetailsModal');
+    document.getElementById('btnCloseDetails').addEventListener('click', () => {
+      detailsModal.style.display = 'none';
+    });
+    detailsModal.addEventListener('click', (e) => {
+      if (e.target === detailsModal) {
+        detailsModal.style.display = 'none';
       }
     });
 

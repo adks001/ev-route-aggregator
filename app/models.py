@@ -57,39 +57,41 @@ def seed_database(db: Session):
 
     # 1. Seed Vehicle Models
     vehicles_data = [
-        # Mercedes-Benz
-        {"id": "mercedes_eqs_suv", "name": "Mercedes-Benz EQS SUV (~108-118 kWh, Up to 857 km)", "battery_kwh": 118.0, "range_km": 857.0, "is_ice": False},
-        # BMW
-        {"id": "bmw_i7", "name": "BMW i7 (101.7 kWh, Up to 625 km)", "battery_kwh": 101.7, "range_km": 625.0, "is_ice": False},
-        {"id": "bmw_ix", "name": "BMW iX (76.6 kWh, 575 km)", "battery_kwh": 76.6, "range_km": 575.0, "is_ice": False},
-        # Porsche
-        {"id": "porsche_taycan", "name": "Porsche Taycan (Up to 105 kWh, Up to 705 km)", "battery_kwh": 105.0, "range_km": 705.0, "is_ice": False},
-        {"id": "porsche_macan_ev", "name": "Porsche Macan EV (95 kWh, 624 km)", "battery_kwh": 95.0, "range_km": 624.0, "is_ice": False},
-        # Mahindra
-        {"id": "mahindra_be_6", "name": "Mahindra BE 6 (79 kWh, 683 km)", "battery_kwh": 79.0, "range_km": 683.0, "is_ice": False},
-        {"id": "mahindra_xev_9e", "name": "Mahindra XEV 9e (~80 kWh, 656 km)", "battery_kwh": 80.0, "range_km": 656.0, "is_ice": False},
-        {"id": "mahindra_xuv400", "name": "Mahindra XUV400 EV (39.4 kWh, 456 km)", "battery_kwh": 39.4, "range_km": 456.0, "is_ice": False},
-        # Kia
-        {"id": "kia_ev6", "name": "Kia EV6 (77.4 kWh, 663 km)", "battery_kwh": 77.4, "range_km": 663.0, "is_ice": False},
-        # BYD
-        {"id": "byd_seal", "name": "BYD Seal (82.5 kWh, 650 km)", "battery_kwh": 82.5, "range_km": 650.0, "is_ice": False},
-        # Tata Motors
-        {"id": "tata_harrier_ev", "name": "Tata Harrier EV (~60-80 kWh, 627 km)", "battery_kwh": 80.0, "range_km": 627.0, "is_ice": False},
-        {"id": "tata_nexon_ev_lr", "name": "Tata Nexon EV Long Range (40.5 kWh, 465 km)", "battery_kwh": 40.5, "range_km": 465.0, "is_ice": False},
-        # Lotus
-        {"id": "lotus_eletre", "name": "Lotus Eletre (112 kWh, 600 km)", "battery_kwh": 112.0, "range_km": 600.0, "is_ice": False},
-        # Volvo
-        {"id": "volvo_ex40", "name": "Volvo EX40 (XC40) (79 kWh, 592 km)", "battery_kwh": 79.0, "range_km": 592.0, "is_ice": False},
-        # Audi
-        {"id": "audi_q8_etron", "name": "Audi Q8 e-tron (114 kWh, 582 km)", "battery_kwh": 114.0, "range_km": 582.0, "is_ice": False},
-        # Hyundai
-        {"id": "hyundai_ioniq_5", "name": "Hyundai IONIQ 5 (72.6 kWh, ~550 km)", "battery_kwh": 72.6, "range_km": 550.0, "is_ice": False},
-        {"id": "hyundai_kona", "name": "Hyundai Kona Electric (39.2-65.4 kWh, 452-490 km)", "battery_kwh": 65.4, "range_km": 490.0, "is_ice": False},
-        # Maruti Suzuki
-        {"id": "maruti_evitara", "name": "Maruti Suzuki e Vitara (61 kWh, 543 km)", "battery_kwh": 61.0, "range_km": 543.0, "is_ice": False},
-        # MG
-        {"id": "mg_zs_ev", "name": "MG ZS EV (50.3 kWh, 461 km)", "battery_kwh": 50.3, "range_km": 461.0, "is_ice": False},
-        {"id": "mg_windsor_ev", "name": "MG Windsor EV (38-50 kWh, 332-460 km)", "battery_kwh": 50.0, "range_km": 460.0, "is_ice": False},
+        # Premium Long-Range EVs
+        {"id": "mercedes_eqs_sedan", "name": "Mercedes-Benz EQS Sedan", "battery_kwh": 107.8, "range_km": 857.0, "is_ice": False},
+        {"id": "lucid_air", "name": "Lucid Air", "battery_kwh": 112.0, "range_km": 800.0, "is_ice": False},
+        {"id": "mahindra_be_6", "name": "Mahindra BE 6", "battery_kwh": 79.0, "range_km": 683.0, "is_ice": False},
+        {"id": "kia_ev6_gt_line", "name": "Kia EV6 GT Line", "battery_kwh": 84.0, "range_km": 708.0, "is_ice": False},
+        {"id": "tesla_model3_lr", "name": "Tesla Model 3 Long Range", "battery_kwh": 82.0, "range_km": 750.0, "is_ice": False},
+        {"id": "bmw_i7", "name": "BMW i7", "battery_kwh": 101.7, "range_km": 625.0, "is_ice": False},
+        {"id": "byd_seal_extended", "name": "BYD Seal (Extended)", "battery_kwh": 82.56, "range_km": 650.0, "is_ice": False},
+        {"id": "porsche_taycan_turbos", "name": "Porsche Taycan (Turbo S)", "battery_kwh": 93.0, "range_km": 678.0, "is_ice": False},
+        {"id": "mercedes_eqs_suv", "name": "Mercedes-Benz EQS SUV", "battery_kwh": 122.0, "range_km": 820.0, "is_ice": False},
+        {"id": "cadillac_escalade_iq", "name": "Cadillac Escalade IQ", "battery_kwh": 205.0, "range_km": 748.0, "is_ice": False},
+        
+        # Mid-Range & Popular SUV/Crossovers
+        {"id": "hyundai_ioniq", "name": "Hyundai Ioniq 5/6", "battery_kwh": 84.0, "range_km": 630.0, "is_ice": False},
+        {"id": "kia_ev9", "name": "Kia EV9", "battery_kwh": 99.8, "range_km": 560.0, "is_ice": False},
+        {"id": "tesla_modely_juniper", "name": "Tesla Model Y Juniper", "battery_kwh": 78.0, "range_km": 525.0, "is_ice": False},
+        {"id": "volvo_ex40", "name": "Volvo EX40", "battery_kwh": 78.0, "range_km": 590.0, "is_ice": False},
+        {"id": "mahindra_xev_9e", "name": "Mahindra XEV 9e", "battery_kwh": 79.0, "range_km": 650.0, "is_ice": False},
+        {"id": "byd_atto_3", "name": "BYD Atto 3", "battery_kwh": 60.5, "range_km": 520.0, "is_ice": False},
+        {"id": "mg_zs_ev", "name": "MG ZS EV", "battery_kwh": 68.0, "range_km": 460.0, "is_ice": False},
+        {"id": "bmw_ix", "name": "BMW iX1/iX3", "battery_kwh": 64.7, "range_km": 500.0, "is_ice": False},
+        {"id": "tata_harrier_ev", "name": "Tata Harrier EV", "battery_kwh": 75.0, "range_km": 627.0, "is_ice": False},
+        {"id": "audi_q8_etron", "name": "Audi Q8 e-tron", "battery_kwh": 114.0, "range_km": 580.0, "is_ice": False},
+
+        # Affordable & Compact EVs
+        {"id": "tata_punch_ev", "name": "Tata Punch EV", "battery_kwh": 40.0, "range_km": 350.0, "is_ice": False},
+        {"id": "mg_windsor_ev", "name": "MG Windsor EV", "battery_kwh": 52.9, "range_km": 450.0, "is_ice": False},
+        {"id": "maruti_evitara", "name": "Maruti Suzuki e Vitara", "battery_kwh": 61.0, "range_km": 540.0, "is_ice": False},
+        {"id": "hyundai_kona", "name": "Hyundai Inster/Kona", "battery_kwh": 65.0, "range_km": 490.0, "is_ice": False},
+        {"id": "tata_tiago_ev", "name": "Tata Tiago EV", "battery_kwh": 24.0, "range_km": 315.0, "is_ice": False},
+        {"id": "citroen_ec3", "name": "Citroën E-C3", "battery_kwh": 44.0, "range_km": 320.0, "is_ice": False},
+        {"id": "mg_comet_ev", "name": "MG Comet EV", "battery_kwh": 17.3, "range_km": 230.0, "is_ice": False},
+        {"id": "kia_ev3", "name": "Kia EV3", "battery_kwh": 81.0, "range_km": 600.0, "is_ice": False},
+        {"id": "vinfast_vf6", "name": "VinFast VF6/VF7", "battery_kwh": 59.0, "range_km": 460.0, "is_ice": False},
+        {"id": "mini_countryman_electric", "name": "Mini Countryman Electric", "battery_kwh": 66.0, "range_km": 460.0, "is_ice": False},
 
         # Non-EV Combustion & Hybrid Cars
         {"id": "ice_petrol", "name": "Petrol Car", "battery_kwh": 50.0, "range_km": 15.0, "is_ice": True}, # battery_kwh represents tank size (L), range_km represents default mileage (km/L)

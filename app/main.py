@@ -15,6 +15,18 @@ from sqlalchemy.orm import Session
 from app.database import Base, engine, SessionLocal, get_db
 from app.models import VehicleModel, Station, Connector, ProximityBooking, OTPVerification, seed_database
 from app.routing import get_driving_route
+from app.config import TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_VERIFY_SERVICE_SID
+from twilio.rest import Client
+
+twilio_client = None
+if TWILIO_ACCOUNT_SID and TWILIO_AUTH_TOKEN:
+    try:
+        twilio_client = Client(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
+        print("[TWILIO] Client initialized successfully.")
+    except Exception as e:
+        print("[TWILIO] Error initializing Client:", e)
+else:
+    print("[TWILIO] Credentials missing. Running in mock fallback mode.")
 
 def scrape_bangalore_fuel_prices():
     prices = {"petrol": 104.5, "diesel": 90.8, "cng": 85.0}
@@ -648,11 +660,27 @@ def send_otp(request_data: dict, db: Session = Depends(get_db)):
         if not phone or not re.match(r"^\d{10}$", phone):
             raise HTTPException(status_code=400, detail="Invalid 10-digit mobile number.")
         
-        # Generate 4-digit OTP
+        formatted_phone = f"+91{phone}"
+        
+        # Use Twilio Verify if configured
+        if twilio_client and TWILIO_VERIFY_SERVICE_SID:
+            try:
+                verification = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID) \
+                                                     .verifications \
+                                                     .create(to=formatted_phone, channel='sms')
+                print(f"\n[TWILIO] Dispatched real OTP verification SMS to {formatted_phone}\n")
+                return {
+                    "status": "SUCCESS",
+                    "message": f"Verification code sent via SMS to {formatted_phone} (via Twilio Verify).",
+                    "otp_preview_for_testing": "sent_via_sms"
+                }
+            except Exception as e:
+                print("[TWILIO] Error sending verification, falling back to mock:", e)
+        
+        # Fallback Mock OTP mode
         otp = str(random.randint(1000, 9999))
         expiry = datetime.utcnow() + timedelta(minutes=5)
         
-        # Insert or update OTP database record
         otp_rec = db.query(OTPVerification).filter(OTPVerification.phone == phone).first()
         if otp_rec:
             otp_rec.otp = otp
@@ -663,12 +691,11 @@ def send_otp(request_data: dict, db: Session = Depends(get_db)):
             db.add(otp_rec)
         db.commit()
         
-        # Log to stdout/terminal for developer visibility
-        print(f"\n[SMS GATEWAY API] Dispatched verification SMS to +91 {phone}. OTP Code: {otp}\n")
+        print(f"\n[MOCK SMS GATEWAY API] Dispatched verification SMS to +91 {phone}. OTP Code: {otp}\n")
         
         return {
             "status": "SUCCESS",
-            "message": f"OTP verification code sent to +91 {phone}.",
+            "message": f"OTP verification code sent to +91 {phone} (Mock Fallback).",
             "otp_preview_for_testing": otp
         }
     except HTTPException as he:
@@ -686,7 +713,37 @@ def verify_otp(request_data: dict, db: Session = Depends(get_db)):
         
         if not phone or not otp:
             raise HTTPException(status_code=400, detail="Missing phone number or OTP.")
-            
+        
+        formatted_phone = f"+91{phone}"
+        
+        # Use Twilio Verify if configured
+        if twilio_client and TWILIO_VERIFY_SERVICE_SID:
+            try:
+                check = twilio_client.verify.v2.services(TWILIO_VERIFY_SERVICE_SID) \
+                                               .verification_checks \
+                                               .create(to=formatted_phone, code=otp)
+                if check.status == 'approved':
+                    otp_rec = db.query(OTPVerification).filter(OTPVerification.phone == phone).first()
+                    if otp_rec:
+                        otp_rec.verified = True
+                        otp_rec.expires_at = datetime.utcnow() + timedelta(hours=1)
+                    else:
+                        otp_rec = OTPVerification(phone=phone, otp="twilio", expires_at=datetime.utcnow() + timedelta(hours=1), verified=True)
+                        db.add(otp_rec)
+                    db.commit()
+                    
+                    return {
+                        "status": "SUCCESS",
+                        "message": "OTP verified successfully via Twilio Verify."
+                    }
+                else:
+                    raise HTTPException(status_code=400, detail="Incorrect OTP. Please enter the code sent to your phone.")
+            except HTTPException as he:
+                raise he
+            except Exception as e:
+                print("[TWILIO] Error checking verification, falling back to database check:", e)
+        
+        # Fallback local DB verify
         otp_rec = db.query(OTPVerification).filter(OTPVerification.phone == phone).first()
         if not otp_rec:
             raise HTTPException(status_code=400, detail="No OTP requested for this phone number.")
@@ -702,7 +759,7 @@ def verify_otp(request_data: dict, db: Session = Depends(get_db)):
         
         return {
             "status": "SUCCESS",
-            "message": "OTP verified successfully."
+            "message": "OTP verified successfully (Mock Fallback)."
         }
     except HTTPException as he:
         raise he

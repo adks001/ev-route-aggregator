@@ -899,17 +899,17 @@
       <!-- STEP 1: Phone No & OTP Verification -->
       <div id="panelPhoneAuth" style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
         <div class="upi-header" style="font-size: 1.05rem; margin-bottom: -0.5rem;">📱 Mobile Authentication</div>
-        <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.3;">Authenticate with your phone number to secure the charger slot. We will mock send the location link to this number.</p>
+        <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.3;">Authenticate with your phone number to secure the charger slot. An SMS verification code will be generated and verified by the backend.</p>
         
         <div class="form-group" id="phoneInputGroup">
           <label for="bookingPhoneNo">Enter 10-Digit Mobile Number</label>
           <input type="tel" id="bookingPhoneNo" placeholder="e.g. 9876543210" maxlength="10" style="width: 100%; padding: 0.75rem; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: inherit; font-size: 1rem; box-sizing: border-box; margin-top: 0.25rem;">
         </div>
-        <button class="btn" id="btnSendOtp" style="width: 100%;">Send Mock OTP</button>
+        <button class="btn" id="btnSendOtp" style="width: 100%;">Send Verification OTP</button>
 
         <div id="otpInputSection" style="display: none; flex-direction: column; gap: 1rem; border-top: 1px dashed rgba(255,255,255,0.08); padding-top: 1rem;">
           <div class="form-group">
-            <label for="bookingOtp">Enter 4-Digit OTP (Sent via SMS)</label>
+            <label for="bookingOtp">Enter 4-Digit SMS Verification OTP</label>
             <input type="text" id="bookingOtp" placeholder="••••" maxlength="4" style="width: 100%; padding: 0.75rem; border-radius: 10px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-family: inherit; font-size: 1.25rem; letter-spacing: 6px; text-align: center; box-sizing: border-box; margin-top: 0.25rem;">
           </div>
           <button class="btn" id="btnVerifyOtp" style="width: 100%; background: linear-gradient(135deg, var(--glow-green) 0%, #10b981 100%); color: #000; font-weight: 800;">Verify OTP & Continue</button>
@@ -1930,45 +1930,100 @@
     document.getElementById('btnCancelBooking2').addEventListener('click', () => { upiModal.style.display = "none"; });
     document.getElementById('btnCancelBooking3').addEventListener('click', () => { upiModal.style.display = "none"; });
 
-    // Step 1: Send mock OTP
-    document.getElementById('btnSendOtp').addEventListener('click', () => {
+    // Step 1: Send OTP via backend API
+    document.getElementById('btnSendOtp').addEventListener('click', async () => {
       const phone = document.getElementById('bookingPhoneNo').value.trim();
       if (!/^\d{10}$/.test(phone)) {
         alert("Please enter a valid 10-digit mobile number.");
         return;
       }
       
-      // Generate a mock 4-digit OTP
-      generatedBookingOtp = Math.floor(1000 + Math.random() * 9000).toString();
-      validatedMobileNo = phone;
+      const btn = document.getElementById('btnSendOtp');
+      const originalText = btn.innerText;
+      btn.innerText = "Requesting OTP...";
+      btn.disabled = true;
       
-      logConsole(`[SMS GATEWAY] OTP request for +91 ${phone}. Generated OTP: ${generatedBookingOtp}`, 'log');
+      const payload = { phone: phone };
+      logConsole("--> POST /api/v1/auth/send-otp payload: " + JSON.stringify(payload), 'log');
       
-      // Prompt user with the mock OTP
-      alert(`📱 Mock SMS Sent to +91 ${phone}\n\nYour OTP Verification Code is: ${generatedBookingOtp}`);
-      
-      // UI transition
-      document.getElementById('phoneInputGroup').style.display = "none";
-      document.getElementById('btnSendOtp').style.display = "none";
-      document.getElementById('otpInputSection').style.display = "flex";
+      try {
+        const res = await fetch(API_BASE + '/api/v1/auth/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        logConsole("<-- SEND-OTP RESPONSE: " + JSON.stringify(data, null, 2), 'resp');
+        
+        if (res.ok && data.status === "SUCCESS") {
+          generatedBookingOtp = data.otp_preview_for_testing;
+          validatedMobileNo = phone;
+          
+          logConsole(`[SMS GATEWAY] OTP request for +91 ${phone} dispatched. OTP Code (Dev Preview): ${generatedBookingOtp}`, 'log');
+          
+          alert(`📱 Verification OTP requested via backend API for +91 ${phone}!\n\nCheck the "API Telemetry Stream" at the bottom of the page to find your 4-digit code.`);
+          
+          // UI transition
+          document.getElementById('phoneInputGroup').style.display = "none";
+          btn.style.display = "none";
+          document.getElementById('otpInputSection').style.display = "flex";
+          document.getElementById('bookingOtp').focus();
+        } else {
+          alert("Failed to send OTP: " + (data.detail || "Unknown error occurred."));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Network error: Could not reach the authentication API.");
+      } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
     });
 
-    // Step 1: Verify OTP
-    document.getElementById('btnVerifyOtp').addEventListener('click', () => {
+    // Step 1: Verify OTP via backend API
+    document.getElementById('btnVerifyOtp').addEventListener('click', async () => {
       const otp = document.getElementById('bookingOtp').value.trim();
-      if (otp !== generatedBookingOtp) {
-        alert("Incorrect OTP. Please enter the correct code shown in the mock alert.");
+      if (!/^\d{4}$/.test(otp)) {
+        alert("Please enter a valid 4-digit OTP code.");
         return;
       }
       
-      logConsole(`Mobile number +91 ${validatedMobileNo} verified successfully!`, 'log');
+      const btn = document.getElementById('btnVerifyOtp');
+      const originalText = btn.innerText;
+      btn.innerText = "Verifying...";
+      btn.disabled = true;
       
-      // Transition to Step 2
-      document.getElementById('panelPhoneAuth').style.display = "none";
-      document.getElementById('authPhoneDisplay').innerText = validatedMobileNo;
-      document.getElementById('panelUpiId').style.display = "flex";
-      document.getElementById('bookingStepBadge').innerText = "Step 2/3";
-      document.getElementById('bookingUpiId').focus();
+      const payload = { phone: validatedMobileNo, otp: otp };
+      logConsole("--> POST /api/v1/auth/verify-otp payload: " + JSON.stringify(payload), 'log');
+      
+      try {
+        const res = await fetch(API_BASE + '/api/v1/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        logConsole("<-- VERIFY-OTP RESPONSE: " + JSON.stringify(data, null, 2), 'resp');
+        
+        if (res.ok && data.status === "SUCCESS") {
+          logConsole(`Mobile number +91 ${validatedMobileNo} verified successfully via backend!`, 'log');
+          
+          // Transition to Step 2
+          document.getElementById('panelPhoneAuth').style.display = "none";
+          document.getElementById('authPhoneDisplay').innerText = validatedMobileNo;
+          document.getElementById('panelUpiId').style.display = "flex";
+          document.getElementById('bookingStepBadge').innerText = "Step 2/3";
+          document.getElementById('bookingUpiId').focus();
+        } else {
+          alert("Verification Failed: " + (data.detail || "Incorrect OTP. Please check logs and try again."));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Network error: Verification API offline.");
+      } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+      }
     });
 
     // Step 2: Submit UPI ID

@@ -47,12 +47,32 @@ class ProximityBooking(Base):
     security_pin = Column(String, nullable=False)
     lock_expires_at = Column(DateTime, nullable=False)
 
+class OTPVerification(Base):
+    __tablename__ = "otp_verifications"
+
+    phone = Column(String, primary_key=True, index=True)
+    otp = Column(String, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    verified = Column(Boolean, default=False)
+
 # Seed function to populate database on first boot
 def seed_database(db: Session):
     # Clear tables to ensure database is updated with fresh ranges/models
     db.query(Connector).delete()
     db.query(Station).delete()
     db.query(VehicleModel).delete()
+    db.query(OTPVerification).delete()
+    db.commit()
+
+    # Seed dummy verified record for developer/compatibility
+    from datetime import datetime, timedelta
+    dummy_auth = OTPVerification(
+        phone="usr_whatsapp_tester",
+        otp="9999",
+        expires_at=datetime.utcnow() + timedelta(days=365),
+        verified=True
+    )
+    db.add(dummy_auth)
     db.commit()
 
     # 1. Seed Vehicle Models

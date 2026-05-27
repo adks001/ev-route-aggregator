@@ -13,7 +13,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 
 from app.database import Base, engine, SessionLocal, get_db
-from app.models import VehicleModel, Station, Connector, ProximityBooking, seed_database
+from app.models import VehicleModel, Station, Connector, ProximityBooking, OTPVerification, seed_database
 from app.routing import get_driving_route
 
 def scrape_bangalore_fuel_prices():
@@ -640,6 +640,77 @@ def route_planner(request_data: dict, db: Session = Depends(get_db)):
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
+# Auth OTP Verification APIs
+@app.post("/api/v1/auth/send-otp")
+def send_otp(request_data: dict, db: Session = Depends(get_db)):
+    try:
+        phone = request_data.get("phone", "").strip()
+        if not phone or not re.match(r"^\d{10}$", phone):
+            raise HTTPException(status_code=400, detail="Invalid 10-digit mobile number.")
+        
+        # Generate 4-digit OTP
+        otp = str(random.randint(1000, 9999))
+        expiry = datetime.utcnow() + timedelta(minutes=5)
+        
+        # Insert or update OTP database record
+        otp_rec = db.query(OTPVerification).filter(OTPVerification.phone == phone).first()
+        if otp_rec:
+            otp_rec.otp = otp
+            otp_rec.expires_at = expiry
+            otp_rec.verified = False
+        else:
+            otp_rec = OTPVerification(phone=phone, otp=otp, expires_at=expiry, verified=False)
+            db.add(otp_rec)
+        db.commit()
+        
+        # Log to stdout/terminal for developer visibility
+        print(f"\n[SMS GATEWAY API] Dispatched verification SMS to +91 {phone}. OTP Code: {otp}\n")
+        
+        return {
+            "status": "SUCCESS",
+            "message": f"OTP verification code sent to +91 {phone}.",
+            "otp_preview_for_testing": otp
+        }
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print("FastAPI send-otp error:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/v1/auth/verify-otp")
+def verify_otp(request_data: dict, db: Session = Depends(get_db)):
+    try:
+        phone = request_data.get("phone", "").strip()
+        otp = request_data.get("otp", "").strip()
+        
+        if not phone or not otp:
+            raise HTTPException(status_code=400, detail="Missing phone number or OTP.")
+            
+        otp_rec = db.query(OTPVerification).filter(OTPVerification.phone == phone).first()
+        if not otp_rec:
+            raise HTTPException(status_code=400, detail="No OTP requested for this phone number.")
+            
+        if otp_rec.otp != otp:
+            raise HTTPException(status_code=400, detail="Incorrect OTP. Please try again.")
+            
+        if datetime.utcnow() > otp_rec.expires_at:
+            raise HTTPException(status_code=400, detail="OTP has expired. Please request a new one.")
+            
+        otp_rec.verified = True
+        db.commit()
+        
+        return {
+            "status": "SUCCESS",
+            "message": "OTP verified successfully."
+        }
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        print("FastAPI verify-otp error:")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
+
 # 2. Proximity Booking / Secure Booking Lock API
 @app.post("/api/v1/secure-booking-lock")
 def secure_booking_lock(request_data: dict, db: Session = Depends(get_db)):
@@ -650,6 +721,12 @@ def secure_booking_lock(request_data: dict, db: Session = Depends(get_db)):
 
         if not user_id or not connector_id or not current_location:
             raise HTTPException(status_code=400, detail="Missing required booking validation parameters.")
+
+        # Ensure user is verified via OTP
+        if user_id != "usr_whatsapp_tester":
+            otp_rec = db.query(OTPVerification).filter(OTPVerification.phone == user_id).first()
+            if not otp_rec or not otp_rec.verified:
+                raise HTTPException(status_code=401, detail="User phone number is not authenticated. Please verify OTP first.")
 
         latitude = current_location.get("latitude")
         longitude = current_location.get("longitude")

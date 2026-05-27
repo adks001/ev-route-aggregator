@@ -726,6 +726,10 @@
       <!-- DYNAMIC COMBUSTION (ICE) INPUT FIELDS -->
       <div id="iceInputsGroup" class="flex-row" style="display: none; margin-bottom: 0.5rem;">
         <div class="form-group">
+          <label id="lblTankCapacity" for="iceTankCapacity">Tank Capacity</label>
+          <input type="number" id="iceTankCapacity" value="50" min="5" max="150" step="1">
+        </div>
+        <div class="form-group">
           <label id="lblMileage" for="iceMileage">Mileage (kmpl)</label>
           <input type="number" id="iceMileage" value="15" min="5" max="40" step="0.5">
         </div>
@@ -1155,8 +1159,10 @@
     const iceInputsGroup = document.getElementById('iceInputsGroup');
     const iceMileage = document.getElementById('iceMileage');
     const iceFuelRate = document.getElementById('iceFuelRate');
+    const iceTankCapacity = document.getElementById('iceTankCapacity');
     const lblMileage = document.getElementById('lblMileage');
     const lblFuelRate = document.getElementById('lblFuelRate');
+    const lblTankCapacity = document.getElementById('lblTankCapacity');
 
     const bookingFields = document.getElementById('bookingFields');
     const bookingIcePanel = document.getElementById('bookingIcePanel');
@@ -1237,7 +1243,8 @@
 
       if (spec.isIce) {
         const mileage = parseFloat(iceMileage.value) || spec.range;
-        totalRange = spec.battery * mileage;
+        const capacity = parseFloat(iceTankCapacity.value) || spec.battery;
+        totalRange = capacity * mileage;
         availableRange = totalRange * (socVal / 100);
 
         document.getElementById('hudRange').innerText = `${totalRange.toFixed(0)} km (Full Tank)`;
@@ -1314,18 +1321,24 @@
         if (val === 'ice_petrol' || val === 'ice_petrol_hybrid') {
           lblMileage.innerText = "Expected Mileage (km/L)";
           lblFuelRate.innerText = "Petrol Rate (₹/L)";
+          lblTankCapacity.innerText = "Tank Capacity (L)";
           iceMileage.value = val === 'ice_petrol_hybrid' ? "24" : "15";
           iceFuelRate.value = VEHICLE_SPECS["ice_petrol"].rate.toString();
+          iceTankCapacity.value = spec.battery.toString();
         } else if (val === 'ice_diesel' || val === 'ice_diesel_hybrid') {
           lblMileage.innerText = "Expected Mileage (km/L)";
           lblFuelRate.innerText = "Diesel Rate (₹/L)";
+          lblTankCapacity.innerText = "Tank Capacity (L)";
           iceMileage.value = val === 'ice_diesel_hybrid' ? "26" : "18";
           iceFuelRate.value = VEHICLE_SPECS["ice_diesel"].rate.toString();
+          iceTankCapacity.value = spec.battery.toString();
         } else if (val === 'ice_cng') {
           lblMileage.innerText = "Expected Mileage (km/kg)";
           lblFuelRate.innerText = "CNG Rate (₹/kg)";
+          lblTankCapacity.innerText = "Cylinder Capacity (kg)";
           iceMileage.value = "25";
           iceFuelRate.value = VEHICLE_SPECS["ice_cng"].rate.toString();
+          iceTankCapacity.value = spec.battery.toString();
         }
       } else {
         lblStartSoC.innerText = "Starting SoC %";
@@ -1637,7 +1650,8 @@
           initial_soc_percent: parseFloat(startSoC.value),
           climate_profile: { ac_mode: document.getElementById('climateMode').value },
           mileage: isICE ? parseFloat(iceMileage.value) : 0.0,
-          fuel_rate: isICE ? parseFloat(iceFuelRate.value) : 0.0
+          fuel_rate: isICE ? parseFloat(iceFuelRate.value) : 0.0,
+          tank_capacity: isICE ? parseFloat(iceTankCapacity.value) : 0.0
         };
 
         logConsole("--> POST /api/v1/route-planner payload: " + JSON.stringify(payload), 'log');

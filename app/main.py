@@ -333,6 +333,7 @@ def route_planner(request_data: dict, db: Session = Depends(get_db)):
         # New dynamic inputs for ICE cars
         custom_mileage = float(request_data.get("mileage", 0.0))
         custom_fuel_rate = float(request_data.get("fuel_rate", 0.0))
+        custom_tank_capacity = float(request_data.get("tank_capacity", 0.0))
 
         if not vehicle_model_id:
             raise HTTPException(status_code=400, detail="Missing vehicle model parameter.")
@@ -350,7 +351,8 @@ def route_planner(request_data: dict, db: Session = Depends(get_db)):
         battery_cap = vehicle.battery_kwh
 
         if is_ice:
-            tank_capacity = vehicle.battery_kwh
+            default_tank = vehicle.battery_kwh
+            tank_capacity = custom_tank_capacity if custom_tank_capacity > 0.0 else default_tank
             default_mileage = vehicle.range_km
             mileage = custom_mileage if custom_mileage > 0.0 else default_mileage
             adjusted_total_range = tank_capacity * mileage  # Total range on full tank
